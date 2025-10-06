@@ -13,6 +13,8 @@
   max-width: 600px;
 
   @media (max-width: 768px) {
+    top: 30%;
+    transform: translate(-50%, -30%);
     width: 90%;
     max-height: 80vh;
   }
