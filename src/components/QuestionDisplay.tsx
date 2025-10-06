@@ -31,7 +31,7 @@ export function QuestionDisplay({ text, onInput, placeholder = '' }: QuestionDis
           placeholder={placeholder}
           className={styles.input}
         />
-        <button type="submit">Submit</button>
+        <button type="submit" className={styles.button}>Submit</button>
       </form>
     </div>
   )
