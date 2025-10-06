@@ -1,6 +1,6 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
+  font-family: "Press Start 2P", system-ui, monospace;
+  line-height: 1.6;
   font-weight: 400;
 
   color-scheme: light dark;
@@ -8,9 +8,8 @@
   background-color: #242424;
 
   font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
 }
 
 a {

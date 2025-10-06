@@ -9,6 +9,7 @@
   background-color: black;
   border: 2px solid $border-color;
   padding: 2rem;
+  color: $border-color;
 }
 
 .textDisplay {
@@ -28,4 +29,16 @@
   flex: 1;
   padding: 0.5rem;
   font-size: 1rem;
+  background-color: black;
+  border: 1px solid $border-color;
+  color: $border-color;
+
+  &:focus {
+    outline: 2px solid $border-color;
+    outline-offset: 2px;
+  }
+
+  &::placeholder {
+    color: rgba($border-color, 0.5);
+  }
 }
