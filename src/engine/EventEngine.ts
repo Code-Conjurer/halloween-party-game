@@ -6,7 +6,7 @@ export interface GameEvent {
 }
 
 export interface DisplayState {
-  type: 'text' | 'question'
+  type: 'text' | 'question' | 'none'
   content: string
   placeholder?: string
 }
@@ -58,7 +58,15 @@ export class EventEngine {
 
   // Hide display
   hide() {
-    this.setState(null)
+    this.setState({
+      type: 'none',
+      content: ''
+    })
+  }
+
+  // Show none (alias for hide)
+  showNone() {
+    this.hide()
   }
 
   // Register an event handler

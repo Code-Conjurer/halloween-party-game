@@ -6,19 +6,24 @@ import { TextDisplay } from './components/TextDisplay'
 import { useEventEngine } from './hooks/useEventEngine'
 
 const normalSpeed = 10;
-const questionSpeed = 3
+const textSpeed = 3
 
 function App() {
   const { engine, displayState } = useEventEngine()
 
   useEffect(() => {
     // Example: Show a text display after 2 seconds, then a question after 5 seconds
+
     engine.scheduleTimeout('initial', 2000, () => {
-      engine.showText('Welcome to the game!')
+      engine.showText('Incoming Transmission...')
     })
 
-    engine.scheduleTimeout('question', 5000, () => {
-      engine.showQuestion('What is your name?', 'Enter your answer')
+    engine.scheduleTimeout('hide', 5000, () => {
+      engine.hide()
+    })
+
+    engine.scheduleTimeout('question', 10000, () => {
+      engine.showQuestion('What is your human name?', 'Enter your answer')
     })
   }, [engine])
 
@@ -30,10 +35,12 @@ function App() {
     engine.showText(`Hello, ${value}!`)
   }
 
+  const frameRate = displayState?.type === 'none' || !displayState ? normalSpeed : textSpeed
+
   return (
     <div className={styles.container}>
-      <StaticCanvas pixelSize={3} frameRate={normalSpeed}/>
-      {displayState && (
+      <StaticCanvas pixelSize={3} frameRate={frameRate}/>
+      {displayState && displayState.type !== 'none' && (
         <div className={styles.questionWrapper}>
           {displayState.type === 'text' && (
             <TextDisplay text={displayState.content} />
