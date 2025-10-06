@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { generateStatic } from '../utils/staticGenerator'
+import styles from './StaticCanvas.module.scss'
 
 interface StaticCanvasProps {
   pixelSize?: number
@@ -8,18 +9,20 @@ interface StaticCanvasProps {
 
 export function StaticCanvas({ pixelSize = 1, frameRate = 60 }: StaticCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const canvas = canvasRef.current
-    if (!canvas) return
+    const container = containerRef.current
+    if (!canvas || !container) return
 
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    // Set canvas to full screen
+    // Set canvas to container size
     const resizeCanvas = () => {
-      canvas.width = window.innerWidth
-      canvas.height = window.innerHeight
+      canvas.width = container.clientWidth
+      canvas.height = container.clientHeight
     }
     resizeCanvas()
     window.addEventListener('resize', resizeCanvas)
@@ -48,5 +51,9 @@ export function StaticCanvas({ pixelSize = 1, frameRate = 60 }: StaticCanvasProp
     }
   }, [pixelSize, frameRate])
 
-  return <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100vh' }} />
+  return (
+    <div ref={containerRef} className={styles.container}>
+      <canvas ref={canvasRef} className={styles.canvas} />
+    </div>
+  )
 }
