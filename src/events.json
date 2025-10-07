@@ -1,0 +1,41 @@
+[
+  {
+    "delay": 2000,
+    "actions": [
+      {
+        "type": "showText",
+        "content": "Incoming Transmission..."
+      }
+    ]
+  },
+  {
+    "delay": 5000,
+    "actions": [
+      {
+        "type": "hide"
+      }
+    ]
+  },
+  {
+    "delay": 10000,
+    "actions": [
+      {
+        "type": "showQuestion",
+        "content": "What is your human name?",
+        "placeholder": "Enter your answer"
+      }
+    ],
+    "triggers": {
+      "onAnswer": [
+        {
+          "actions": [
+            {
+              "type": "showText",
+              "content": "Hello, {answer}!"
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

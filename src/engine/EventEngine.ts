@@ -11,6 +11,24 @@ export interface DisplayState {
   placeholder?: string
 }
 
+// JSON configuration types
+export interface EventAction {
+  type: 'showText' | 'showQuestion' | 'hide' | 'emit'
+  content?: string
+  placeholder?: string
+  eventName?: string
+  payload?: any
+}
+
+export interface EventConfig {
+  delay?: number
+  actions: EventAction[]
+  triggers?: {
+    onAnswer?: EventConfig[]
+    onEvent?: { [eventName: string]: EventConfig[] }
+  }
+}
+
 export type EventHandler = (event: GameEvent) => void
 
 export class EventEngine {
@@ -122,6 +140,71 @@ export class EventEngine {
   clearAllTimeouts() {
     this.timeouts.forEach(timeout => clearTimeout(timeout))
     this.timeouts.clear()
+  }
+
+  // Process a single event action
+  private processAction(action: EventAction) {
+    switch (action.type) {
+      case 'showText':
+        if (action.content) {
+          this.showText(action.content)
+        }
+        break
+      case 'showQuestion':
+        if (action.content) {
+          this.showQuestion(action.content, action.placeholder)
+        }
+        break
+      case 'hide':
+        this.hide()
+        break
+      case 'emit':
+        if (action.eventName) {
+          this.emit(action.eventName, {
+            type: 'custom',
+            payload: action.payload
+          })
+        }
+        break
+    }
+  }
+
+  // Load and execute events from JSON configuration
+  loadEvents(events: EventConfig[]) {
+    events.forEach((event, index) => {
+      const executeEvent = () => {
+        // Execute all actions
+        event.actions.forEach(action => this.processAction(action))
+
+        // Set up triggers if specified
+        if (event.triggers) {
+          // Handle answer triggers
+          if (event.triggers.onAnswer) {
+            const answerHandler = () => {
+              this.loadEvents(event.triggers!.onAnswer!)
+            }
+            this.on('answer', answerHandler)
+          }
+
+          // Handle custom event triggers
+          if (event.triggers.onEvent) {
+            Object.entries(event.triggers.onEvent).forEach(([eventName, triggeredEvents]) => {
+              const eventHandler = () => {
+                this.loadEvents(triggeredEvents)
+              }
+              this.on(eventName, eventHandler)
+            })
+          }
+        }
+      }
+
+      // Schedule with delay or execute immediately
+      if (event.delay) {
+        this.scheduleTimeout(`json_event_${index}`, event.delay, executeEvent)
+      } else {
+        executeEvent()
+      }
+    })
   }
 
   // Clean up

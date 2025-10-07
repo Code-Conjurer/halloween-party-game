@@ -4,6 +4,8 @@ import { StaticCanvas } from './components/StaticCanvas'
 import { QuestionDisplay } from './components/QuestionDisplay'
 import { TextDisplay } from './components/TextDisplay'
 import { useEventEngine } from './hooks/useEventEngine'
+import eventsConfig from './events.json'
+import type { EventConfig } from './engine/EventEngine'
 
 const normalSpeed = 10;
 const textSpeed = 3
@@ -12,19 +14,8 @@ function App() {
   const { engine, displayState } = useEventEngine()
 
   useEffect(() => {
-    // Example: Show a text display after 2 seconds, then a question after 5 seconds
-
-    engine.scheduleTimeout('initial', 2000, () => {
-      engine.showText('Incoming Transmission...')
-    })
-
-    engine.scheduleTimeout('hide', 5000, () => {
-      engine.hide()
-    })
-
-    engine.scheduleTimeout('question', 10000, () => {
-      engine.showQuestion('What is your human name?', 'Enter your answer')
-    })
+    // Load events from JSON configuration
+    engine.loadEvents(eventsConfig as EventConfig[])
   }, [engine])
 
   const handleAnswer = (value: string) => {
