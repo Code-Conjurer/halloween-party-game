@@ -16,7 +16,7 @@ export type EventHandler = (event: GameEvent) => void
 export class EventEngine {
   private currentState: DisplayState | null = null
   private eventHandlers: Map<string, EventHandler[]> = new Map()
-  private timeouts: Map<string, NodeJS.Timeout> = new Map()
+  private timeouts: Map<string, number> = new Map()
   private stateChangeCallback?: (state: DisplayState | null) => void
 
   constructor() {}
