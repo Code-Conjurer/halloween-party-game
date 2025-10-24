@@ -240,10 +240,13 @@ export class GameDatabase {
    * Clear all data (for testing/reset)
    */
   clearAllData(): void {
+    // Temporarily disable foreign keys to allow deletion in any order
+    this.db.exec('PRAGMA foreign_keys = OFF')
     this.db.exec('DELETE FROM answers')
     this.db.exec('DELETE FROM sessions')
     this.db.exec('DELETE FROM game_state')
     this.db.exec('DELETE FROM session_event_cursors')
+    this.db.exec('PRAGMA foreign_keys = ON')
     console.log('🗑️  All data cleared')
   }
 }
