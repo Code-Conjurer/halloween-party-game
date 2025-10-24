@@ -5,6 +5,7 @@ import { readFileSync } from 'fs'
 import { GameDatabase } from './database/db.js'
 import { EventScheduler } from './eventScheduler.js'
 import { sessionMiddleware } from './middleware/session.js'
+import { createApiRoutes } from './routes/api.js'
 
 // Load environment variables
 dotenv.config()
@@ -24,7 +25,7 @@ const eventScheduler = new EventScheduler((eventId: string) => {
 })
 
 // Load events from config
-const eventsConfig = JSON.parse(readFileSync('./server/config/events.json', 'utf-8'))
+const eventsConfig = JSON.parse(readFileSync('./config/events.json', 'utf-8'))
 eventScheduler.loadEvents(eventsConfig)
 
 // Middleware
@@ -40,7 +41,8 @@ app.get('/health', (req: Request, res: Response) => {
   res.json({ status: 'ok', timestamp: Date.now() })
 })
 
-// API Routes will be added here
+// API Routes
+app.use('/api', createApiRoutes(db, eventScheduler))
 
 // Error handling middleware
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
