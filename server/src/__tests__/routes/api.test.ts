@@ -7,6 +7,22 @@ import { createApiRoutes } from '../../routes/api.js'
 import { createTestDb, cleanupTestDb } from '../utils/testDb.js'
 import { resetCounters, createEventsConfig, createEventFixture } from '../fixtures/factories.js'
 
+/**
+ * Helper function to create test Express app with error handler
+ */
+function createTestApp(db: GameDatabase, scheduler: EventScheduler): express.Application {
+  const app = express()
+  app.use(express.json())
+  app.use('/api', createApiRoutes(db, scheduler))
+
+  // Error handler (matches production error handler in index.ts)
+  app.use((err: any, req: any, res: any, next: any) => {
+    res.status(500).json({ error: err.message })
+  })
+
+  return app
+}
+
 describe('API Routes', () => {
   let app: express.Application
   let db: GameDatabase
@@ -22,11 +38,7 @@ describe('API Routes', () => {
       }))
     })
 
-    // Create test app
-    app = express()
-    app.use(express.json())
-    // Session middleware is now applied per-route in api.ts
-    app.use('/api', createApiRoutes(db, scheduler))
+    app = createTestApp(db, scheduler)
   })
 
   afterEach(() => {
@@ -41,6 +53,27 @@ describe('API Routes', () => {
         .expect(200)
 
       expect(response.body.type).toBe('none')
+    })
+
+    test('should handle database errors gracefully', async () => {
+      // Close database to force an error
+      db.close()
+
+      const response = await request(app)
+        .get('/api/current-event')
+        .expect(500)
+
+      expect(response.body.error).toBe('The database connection is not open')
+
+      // Recreate database and app for other tests
+      db = createTestDb()
+      scheduler = new EventScheduler((eventId) => {
+        return db.getAnswersByEvent(eventId).map(a => ({
+          sessionId: a.session_id,
+          answer: a.answer_value
+        }))
+      })
+      app = createTestApp(db, scheduler)
     })
 
     test('should return event at user cursor position', async () => {
@@ -159,6 +192,31 @@ describe('API Routes', () => {
       const answers = db.getAnswersByEvent('event_0')
       expect(answers).toHaveLength(1)
       expect(answers[0].answer_value).toBe('My answer')
+    })
+
+    test('should handle database errors when submitting answer', async () => {
+      const config = createEventsConfig(1)
+      scheduler.loadEvents(config)
+
+      // Close database to force an error
+      db.close()
+
+      const response = await request(app)
+        .post('/api/answer')
+        .send({ eventId: 'event_0', answer: 'My answer' })
+        .expect(500)
+
+      expect(response.body.error).toBe('The database connection is not open')
+
+      // Recreate database and app for other tests
+      db = createTestDb()
+      scheduler = new EventScheduler((eventId) => {
+        return db.getAnswersByEvent(eventId).map(a => ({
+          sessionId: a.session_id,
+          answer: a.answer_value
+        }))
+      })
+      app = createTestApp(db, scheduler)
     })
 
     test('should return 400 if eventId missing', async () => {
@@ -335,6 +393,27 @@ describe('API Routes', () => {
         .expect(200)
 
       expect(response.body.participantCount).toBe(2)
+    })
+
+    test('should handle database errors when getting game status', async () => {
+      // Close database to force an error
+      db.close()
+
+      const response = await request(app)
+        .get('/api/game/status')
+        .expect(500)
+
+      expect(response.body.error).toBe('The database connection is not open')
+
+      // Recreate database and app for other tests
+      db = createTestDb()
+      scheduler = new EventScheduler((eventId) => {
+        return db.getAnswersByEvent(eventId).map(a => ({
+          sessionId: a.session_id,
+          answer: a.answer_value
+        }))
+      })
+      app = createTestApp(db, scheduler)
     })
   })
 

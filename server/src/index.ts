@@ -47,8 +47,7 @@ app.use('/api', createApiRoutes(db, eventScheduler))
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error('Error:', err.message)
   res.status(500).json({
-    error: 'Internal server error',
-    message: process.env.NODE_ENV === 'development' ? err.message : undefined
+    error: err.message || 'Unknown error'
   })
 })
 

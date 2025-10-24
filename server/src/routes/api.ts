@@ -16,7 +16,7 @@ export function createApiRoutes(db: GameDatabase, eventScheduler: EventScheduler
    * Handles mandatory events and cursor position
    * Requires session tracking
    */
-  router.get('/current-event', sessionMiddleware(db), (req: Request, res: Response) => {
+  router.get('/current-event', sessionMiddleware(db), (req: Request, res: Response, next) => {
     try {
       const sessionId = req.sessionId!
 
@@ -42,8 +42,7 @@ export function createApiRoutes(db: GameDatabase, eventScheduler: EventScheduler
         answerCount
       })
     } catch (error) {
-      console.error('Error getting current event:', error)
-      res.status(500).json({ error: 'Failed to get current event' })
+      next(error)
     }
   })
 
@@ -54,7 +53,7 @@ export function createApiRoutes(db: GameDatabase, eventScheduler: EventScheduler
    * Submit an answer and advance cursor if not mandatory
    * Requires session tracking
    */
-  router.post('/answer', sessionMiddleware(db), (req: Request, res: Response) => {
+  router.post('/answer', sessionMiddleware(db), (req: Request, res: Response, next) => {
     try {
       const sessionId = req.sessionId!
       const { eventId, answer }: AnswerSubmission = req.body
@@ -88,8 +87,7 @@ export function createApiRoutes(db: GameDatabase, eventScheduler: EventScheduler
         duplicate
       })
     } catch (error) {
-      console.error('Error submitting answer:', error)
-      res.status(500).json({ error: 'Failed to submit answer' })
+      next(error)
     }
   })
 
@@ -99,7 +97,7 @@ export function createApiRoutes(db: GameDatabase, eventScheduler: EventScheduler
    * GET /api/game/status
    * Get current game status
    */
-  router.get('/game/status', (req: Request, res: Response) => {
+  router.get('/game/status', (req: Request, res: Response, next) => {
     try {
       const response: GameStatusResponse = {
         gameActive: eventScheduler.isGameActive(),
@@ -110,8 +108,7 @@ export function createApiRoutes(db: GameDatabase, eventScheduler: EventScheduler
 
       res.json(response)
     } catch (error) {
-      console.error('Error getting game status:', error)
-      res.status(500).json({ error: 'Failed to get game status' })
+      next(error)
     }
   })
 
@@ -121,7 +118,7 @@ export function createApiRoutes(db: GameDatabase, eventScheduler: EventScheduler
    * POST /api/admin/start
    * Start the game
    */
-  router.post('/admin/start', (req: Request, res: Response) => {
+  router.post('/admin/start', (req: Request, res: Response, next) => {
     try {
       eventScheduler.startGame()
 
@@ -130,8 +127,7 @@ export function createApiRoutes(db: GameDatabase, eventScheduler: EventScheduler
         startTime: eventScheduler.getGameStartTime()
       })
     } catch (error) {
-      console.error('Error starting game:', error)
-      res.status(500).json({ error: 'Failed to start game' })
+      next(error)
     }
   })
 
@@ -139,15 +135,14 @@ export function createApiRoutes(db: GameDatabase, eventScheduler: EventScheduler
    * POST /api/admin/reset
    * Reset game state
    */
-  router.post('/admin/reset', (req: Request, res: Response) => {
+  router.post('/admin/reset', (req: Request, res: Response, next) => {
     try {
       eventScheduler.reset()
       db.clearAllData()
 
       res.json({ success: true })
     } catch (error) {
-      console.error('Error resetting game:', error)
-      res.status(500).json({ error: 'Failed to reset game' })
+      next(error)
     }
   })
 
@@ -155,7 +150,7 @@ export function createApiRoutes(db: GameDatabase, eventScheduler: EventScheduler
    * GET /api/admin/sessions
    * Get all sessions
    */
-  router.get('/admin/sessions', (req: Request, res: Response) => {
+  router.get('/admin/sessions', (req: Request, res: Response, next) => {
     try {
       const sessions = db.getAllSessions()
       const activeCount = db.getActiveSessionCount()
@@ -172,8 +167,7 @@ export function createApiRoutes(db: GameDatabase, eventScheduler: EventScheduler
         sessions: sessionsWithCursors
       })
     } catch (error) {
-      console.error('Error getting sessions:', error)
-      res.status(500).json({ error: 'Failed to get sessions' })
+      next(error)
     }
   })
 
@@ -181,7 +175,7 @@ export function createApiRoutes(db: GameDatabase, eventScheduler: EventScheduler
    * POST /api/admin/session/:sessionId/cursor
    * Set a user's event cursor position
    */
-  router.post('/admin/session/:sessionId/cursor', (req: Request, res: Response) => {
+  router.post('/admin/session/:sessionId/cursor', (req: Request, res: Response, next) => {
     try {
       const { sessionId } = req.params
       const { eventIndex } = req.body
@@ -203,8 +197,7 @@ export function createApiRoutes(db: GameDatabase, eventScheduler: EventScheduler
         newCursor: eventIndex
       })
     } catch (error) {
-      console.error('Error setting session cursor:', error)
-      res.status(500).json({ error: 'Failed to set session cursor' })
+      next(error)
     }
   })
 
@@ -212,7 +205,7 @@ export function createApiRoutes(db: GameDatabase, eventScheduler: EventScheduler
    * GET /api/admin/answers/:eventId
    * Get all answers for an event
    */
-  router.get('/admin/answers/:eventId', (req: Request, res: Response) => {
+  router.get('/admin/answers/:eventId', (req: Request, res: Response, next) => {
     try {
       const { eventId } = req.params
       const answers = db.getAnswersByEvent(eventId)
@@ -224,8 +217,7 @@ export function createApiRoutes(db: GameDatabase, eventScheduler: EventScheduler
         answers
       })
     } catch (error) {
-      console.error('Error getting answers:', error)
-      res.status(500).json({ error: 'Failed to get answers' })
+      next(error)
     }
   })
 
@@ -233,7 +225,7 @@ export function createApiRoutes(db: GameDatabase, eventScheduler: EventScheduler
    * GET /api/admin/export
    * Export all data
    */
-  router.get('/admin/export', (req: Request, res: Response) => {
+  router.get('/admin/export', (req: Request, res: Response, next) => {
     try {
       const data = {
         sessions: db.getAllSessions(),
@@ -247,8 +239,7 @@ export function createApiRoutes(db: GameDatabase, eventScheduler: EventScheduler
 
       res.json(data)
     } catch (error) {
-      console.error('Error exporting data:', error)
-      res.status(500).json({ error: 'Failed to export data' })
+      next(error)
     }
   })
 
