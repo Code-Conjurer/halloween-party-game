@@ -8,10 +8,14 @@
 - [ ] Create `server/config/` for configuration files
 - [ ] Create `server/data/` for database storage
 - [ ] Initialize separate `package.json` in server directory
+- [ ] Move existing React app into `client/` directory
+- [ ] Create `client/src/services/` for API communication
+- [ ] Create `client/src/hooks/` for custom hooks (if not exists)
+- [ ] Create `client/src/components/custom/` for custom event components
+- [ ] Update any absolute path references in client code
 
 ### Step 1.2: Server Dependencies
 - [ ] Install Express for HTTP server
-- [ ] Install CORS for cross-origin requests
 - [ ] Install TypeScript and type definitions
 - [ ] Install better-sqlite3 for database
 - [ ] Install dotenv for environment variables
@@ -24,7 +28,7 @@
 
 ### Step 1.4: Basic Express Server
 - [ ] Create `server/src/index.ts` entry point
-- [ ] Set up Express app with middleware (CORS, JSON parsing)
+- [ ] Set up Express app with middleware (JSON parsing)
 - [ ] Add health check endpoint (`GET /health`)
 - [ ] Configure port from environment variables
 - [ ] Add basic error handling middleware
