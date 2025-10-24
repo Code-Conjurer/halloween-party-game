@@ -4,7 +4,6 @@ import dotenv from 'dotenv'
 import { readFileSync } from 'fs'
 import { GameDatabase } from './database/db.js'
 import { EventScheduler } from './eventScheduler.js'
-import { sessionMiddleware } from './middleware/session.js'
 import { createApiRoutes } from './routes/api.js'
 
 // Load environment variables
@@ -34,7 +33,7 @@ app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:5173',
   credentials: true
 }))
-app.use(sessionMiddleware(db))
+// Session middleware is applied per-route in api.ts
 
 // Health check endpoint
 app.get('/health', (req: Request, res: Response) => {

@@ -2,6 +2,7 @@
 import { Router, Request, Response } from 'express'
 import { GameDatabase } from '../database/db.js'
 import { EventScheduler } from '../eventScheduler.js'
+import { sessionMiddleware } from '../middleware/session.js'
 import { AnswerSubmission, GameStatusResponse } from '../types.js'
 
 export function createApiRoutes(db: GameDatabase, eventScheduler: EventScheduler) {
@@ -13,8 +14,9 @@ export function createApiRoutes(db: GameDatabase, eventScheduler: EventScheduler
    * GET /api/current-event
    * Returns the current event for this user
    * Handles mandatory events and cursor position
+   * Requires session tracking
    */
-  router.get('/current-event', (req: Request, res: Response) => {
+  router.get('/current-event', sessionMiddleware(db), (req: Request, res: Response) => {
     try {
       const sessionId = req.sessionId!
 
@@ -50,8 +52,9 @@ export function createApiRoutes(db: GameDatabase, eventScheduler: EventScheduler
   /**
    * POST /api/answer
    * Submit an answer and advance cursor if not mandatory
+   * Requires session tracking
    */
-  router.post('/answer', (req: Request, res: Response) => {
+  router.post('/answer', sessionMiddleware(db), (req: Request, res: Response) => {
     try {
       const sessionId = req.sessionId!
       const { eventId, answer }: AnswerSubmission = req.body
