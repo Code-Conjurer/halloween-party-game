@@ -1,0 +1,30 @@
+{
+  "name": "halloween-party-game-server",
+  "version": "1.0.0",
+  "description": "Server for Halloween Party Game",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon --watch src --ext ts --exec tsx src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "keywords": ["halloween", "game", "party"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.0",
+    "better-sqlite3": "^9.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0",
+    "@types/express": "^4.17.0",
+    "@types/cors": "^2.8.0",
+    "@types/better-sqlite3": "^7.6.0",
+    "tsx": "^4.0.0",
+    "nodemon": "^3.0.0"
+  }
+}
