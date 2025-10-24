@@ -64,13 +64,10 @@ export class EventScheduler {
   }
 
   /**
-   * Trigger an event (display it)
+   * Convert EventConfig to DisplayEvent
    */
-  private triggerEvent(event: EventConfig): void {
-    console.log(`🎃 Triggering event: ${event.id}`)
-
-    // Convert event config to display event
-    this.currentEvent = {
+  private eventToDisplayEvent(event: EventConfig): DisplayEvent {
+    return {
       type: event.type,
       eventId: event.id,
       content: event.content || '',
@@ -79,8 +76,18 @@ export class EventScheduler {
       componentName: event.componentName,
       props: event.props,
       duration: event.duration,
-      override: event.override
+      mandatory: event.mandatory
     }
+  }
+
+  /**
+   * Trigger an event (display it)
+   */
+  private triggerEvent(event: EventConfig): void {
+    console.log(`🎃 Triggering event: ${event.id}`)
+
+    // Convert event config to display event
+    this.currentEvent = this.eventToDisplayEvent(event)
 
     // Handle auto-hide duration
     if (event.duration) {
@@ -101,6 +108,48 @@ export class EventScheduler {
    */
   getCurrentEvent(): DisplayEvent | null {
     return this.currentEvent
+  }
+
+  /**
+   * Get the appropriate event for a specific session
+   * Handles mandatory events and user cursor position
+   */
+  getEventForSession(
+    sessionId: string,
+    cursorIndex: number,
+    hasAnsweredEvent: (eventId: string) => boolean
+  ): DisplayEvent | null {
+    // Find all mandatory events before the cursor that haven't been answered
+    const unansweredMandatory: EventConfig[] = []
+
+    for (let i = 0; i < cursorIndex && i < this.events.length; i++) {
+      const event = this.events[i]
+      if (event.mandatory && !hasAnsweredEvent(event.id)) {
+        unansweredMandatory.push(event)
+      }
+    }
+
+    // If there are unanswered mandatory events, return the first one
+    if (unansweredMandatory.length > 0) {
+      const event = unansweredMandatory[0]
+      return this.eventToDisplayEvent(event)
+    }
+
+    // Otherwise, return the event at the cursor position
+    if (cursorIndex < this.events.length) {
+      const event = this.events[cursorIndex]
+      return this.eventToDisplayEvent(event)
+    }
+
+    // No more events
+    return { type: 'none', eventId: '', content: '' }
+  }
+
+  /**
+   * Get all events (for admin/cursor management)
+   */
+  getAllEvents(): EventConfig[] {
+    return this.events
   }
 
   /**

@@ -13,7 +13,7 @@ export interface EventConfig {
   componentName?: string // For custom components - matches client registry
   props?: Record<string, any>
   duration?: number // Auto-hide after N milliseconds
-  override?: boolean // If false, cannot replace current event (default: true)
+  mandatory?: boolean // If true, user cannot skip this event (default: false)
   triggers?: {
     onAnswer?: Record<string, EventConfig[]> | EventConfig[]
     onComplete?: EventConfig[]
@@ -36,7 +36,7 @@ export interface DisplayEvent {
   componentName?: string
   props?: Record<string, any>
   duration?: number
-  override?: boolean
+  mandatory?: boolean
   hasAnswered?: boolean
   answerCount?: number
 }
