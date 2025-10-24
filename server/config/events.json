@@ -1,0 +1,30 @@
+{
+  "events": [
+    {
+      "id": "welcome",
+      "triggerAt": "2025-10-31T19:00:00Z",
+      "type": "text",
+      "content": "Incoming Transmission...",
+      "duration": 3000
+    },
+    {
+      "id": "name_question",
+      "triggerAt": "2025-10-31T19:00:10Z",
+      "type": "question",
+      "content": "What is your human name?",
+      "placeholder": "Enter your answer",
+      "override": false,
+      "triggers": {
+        "onAnswer": [
+          {
+            "id": "greeting",
+            "triggerAt": "2025-10-31T19:00:00Z",
+            "type": "text",
+            "content": "Hello, {answer}!",
+            "duration": 5000
+          }
+        ]
+      }
+    }
+  ]
+}
