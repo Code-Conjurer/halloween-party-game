@@ -64,9 +64,11 @@ describe('GameDatabase', () => {
       const sessions = db.getAllSessions()
 
       expect(sessions).toHaveLength(3)
-      expect(sessions[0].ip_address).toBe('127.0.0.1')
-      expect(sessions[1].ip_address).toBe('127.0.0.2')
-      expect(sessions[2].ip_address).toBe('127.0.0.3')
+      // Check that all IP addresses are present (order may vary with same timestamps)
+      const ipAddresses = sessions.map(s => s.ip_address)
+      expect(ipAddresses).toContain('127.0.0.1')
+      expect(ipAddresses).toContain('127.0.0.2')
+      expect(ipAddresses).toContain('127.0.0.3')
     })
 
     test('should count active sessions', () => {
