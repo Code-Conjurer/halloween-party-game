@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach, jest } from '@jest/globals'
+import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals'
 import {
   getCurrentEvent,
   submitAnswer,
@@ -13,6 +13,10 @@ describe('API Client', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     // Note: localStorage is automatically cleared before each test via setup.ts
+  })
+
+  afterEach(() => {
+    jest.useRealTimers()
   })
 
   describe('getCurrentEvent', () => {
@@ -41,11 +45,8 @@ describe('API Client', () => {
     })
 
     test('should include session headers when available', async () => {
-      ;(localStorage.getItem as jest.Mock).mockImplementation((key) => {
-        if (key === 'clientId') return 'test-client-id'
-        if (key === 'deviceFingerprint') return '{"screen":1920}'
-        return null
-      })
+      localStorage.setItem('clientId', 'test-client-id')
+      localStorage.setItem('deviceFingerprint', '{"screen":1920}')
 
       ;(global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
@@ -66,6 +67,7 @@ describe('API Client', () => {
     })
 
     test('should retry on failure', async () => {
+      jest.useFakeTimers()
       const mockEvent = { type: 'none', eventId: '', content: '' }
 
       // Fail first two times, succeed on third
@@ -77,27 +79,44 @@ describe('API Client', () => {
           json: async () => mockEvent,
         })
 
-      const event = await getCurrentEvent()
+      const eventPromise = getCurrentEvent()
+
+      // Fast-forward through all timers
+      await jest.runAllTimersAsync()
+
+      const event = await eventPromise
 
       expect(event).toEqual(mockEvent)
       expect(global.fetch).toHaveBeenCalledTimes(3)
-    }, 10000)
+    })
 
     test('should throw after max retries', async () => {
+      jest.useFakeTimers()
       ;(global.fetch as jest.Mock).mockRejectedValue(new Error('Network error'))
 
-      await expect(getCurrentEvent()).rejects.toThrow('Network error')
+      const eventPromise = getCurrentEvent()
+
+      // Fast-forward through all timers
+      await jest.runAllTimersAsync()
+
+      await expect(eventPromise).rejects.toThrow('Network error')
       expect(global.fetch).toHaveBeenCalledTimes(4) // Initial + 3 retries
-    }, 15000)
+    })
 
     test('should handle HTTP errors', async () => {
-      ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+      jest.useFakeTimers()
+      ;(global.fetch as jest.Mock).mockResolvedValue({
         ok: false,
         status: 404,
         statusText: 'Not Found',
       })
 
-      await expect(getCurrentEvent()).rejects.toThrow('HTTP 404: Not Found')
+      const eventPromise = getCurrentEvent()
+
+      // Fast-forward through all timers
+      await jest.runAllTimersAsync()
+
+      await expect(eventPromise).rejects.toThrow('HTTP 404: Not Found')
     })
   })
 

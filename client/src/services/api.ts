@@ -33,7 +33,7 @@ export interface SessionResponse {
 }
 
 // Get base URL from environment or default to /api
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
+const API_BASE_URL = '/api'
 
 // Retry configuration
 const MAX_RETRIES = 3
