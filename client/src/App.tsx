@@ -3,6 +3,8 @@ import styles from './App.module.scss'
 import { StaticCanvas } from './components/StaticCanvas'
 import { QuestionDisplay } from './components/QuestionDisplay'
 import { TextDisplay } from './components/TextDisplay'
+import { MultipleChoiceDisplay } from './components/MultipleChoiceDisplay'
+import { CustomComponentRenderer } from './components/CustomComponentRenderer'
 import { useServerPolling } from './hooks/useServerPolling'
 import { initializeSession } from './utils/session'
 
@@ -17,13 +19,21 @@ function App() {
     initializeSession()
   }, [])
 
-  const handleAnswer = async (value: string) => {
+  const handleAnswer = async (value: any) => {
     try {
       await submitAnswer(value)
       console.log('Answer submitted:', value)
     } catch (err) {
       console.error('Failed to submit answer:', err)
     }
+  }
+
+  const handleCustomComplete = async (data?: any) => {
+    await handleAnswer(data)
+  }
+
+  const handleCustomFail = (reason?: string) => {
+    console.error('Custom component failed:', reason)
   }
 
   const frameRate = displayState?.type === 'none' || !displayState ? normalSpeed : textSpeed
@@ -47,6 +57,23 @@ function App() {
               placeholder={displayState.placeholder || ''}
               onInput={handleAnswer}
               disabled={isLoading}
+            />
+          )}
+          {displayState.type === 'multiple_choice' && displayState.options && (
+            <MultipleChoiceDisplay
+              content={displayState.content}
+              options={displayState.options}
+              allowMultiple={false}
+              onSubmit={handleAnswer}
+              disabled={isLoading}
+            />
+          )}
+          {displayState.type === 'custom_component' && displayState.componentName && (
+            <CustomComponentRenderer
+              componentName={displayState.componentName}
+              props={displayState.props || {}}
+              onComplete={handleCustomComplete}
+              onFail={handleCustomFail}
             />
           )}
         </div>

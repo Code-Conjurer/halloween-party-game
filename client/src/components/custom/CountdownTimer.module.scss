@@ -1,0 +1,64 @@
+@import '../../styles/variables.scss';
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  width: 100%;
+  background-color: black;
+  border: 4px solid $border-color;
+  padding: 2rem;
+  color: $border-color;
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+    gap: 1rem;
+    border-width: 2px;
+  }
+}
+
+.message {
+  font-size: 1.5rem;
+  text-align: center;
+
+  @media (max-width: 768px) {
+    font-size: 0.75rem;
+  }
+}
+
+.timer {
+  font-size: 4rem;
+  font-weight: bold;
+  font-family: monospace;
+
+  @media (max-width: 768px) {
+    font-size: 2rem;
+  }
+}
+
+.button {
+  padding: 0.5rem 2rem;
+  font-size: 1rem;
+  font-family: inherit;
+  background-color: black;
+  border: 1px solid $border-color;
+  color: $border-color;
+  cursor: pointer;
+  box-sizing: border-box;
+
+  &:hover {
+    background-color: rgba($border-color, 0.1);
+  }
+
+  &:focus {
+    outline: 2px solid $border-color;
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 0.6rem;
+    padding: 0.4rem 1rem;
+  }
+}
