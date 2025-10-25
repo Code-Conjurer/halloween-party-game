@@ -18,6 +18,7 @@ dist-ssr
 *.db-wal
 server/data/
 server/coverage
+client/coverage
 
 # Environment files
 .env

@@ -16,29 +16,24 @@ describe('Session Utilities', () => {
   describe('getOrCreateClientId', () => {
     test('should return existing client ID from localStorage', () => {
       const existingId = 'existing-uuid-123'
-      ;(localStorage.getItem as jest.Mock).mockReturnValue(existingId)
+      localStorage.setItem('clientId', existingId)
 
       const clientId = getOrCreateClientId()
 
       expect(clientId).toBe(existingId)
-      expect(localStorage.getItem).toHaveBeenCalledWith('clientId')
-      expect(localStorage.setItem).not.toHaveBeenCalled()
     })
 
     test('should generate and store new client ID if none exists', () => {
-      ;(localStorage.getItem as jest.Mock).mockReturnValue(null)
-
       const clientId = getOrCreateClientId()
 
       expect(clientId).toBeTruthy()
       expect(typeof clientId).toBe('string')
-      expect(localStorage.setItem).toHaveBeenCalledWith('clientId', clientId)
+      expect(localStorage.getItem('clientId')).toBe(clientId)
     })
 
     test('should generate unique IDs on multiple calls', () => {
-      ;(localStorage.getItem as jest.Mock).mockReturnValue(null)
-
       const id1 = getOrCreateClientId()
+      localStorage.clear()
       const id2 = getOrCreateClientId()
 
       expect(id1).not.toBe(id2)
@@ -85,17 +80,14 @@ describe('Session Utilities', () => {
 
   describe('getSessionId and setSessionId', () => {
     test('should return null when no session ID exists', () => {
-      ;(localStorage.getItem as jest.Mock).mockReturnValue(null)
-
       const sessionId = getSessionId()
 
       expect(sessionId).toBeNull()
-      expect(localStorage.getItem).toHaveBeenCalledWith('sessionId')
     })
 
     test('should return existing session ID', () => {
       const existingSessionId = 'session-123'
-      ;(localStorage.getItem as jest.Mock).mockReturnValue(existingSessionId)
+      localStorage.setItem('sessionId', existingSessionId)
 
       const sessionId = getSessionId()
 
@@ -107,7 +99,7 @@ describe('Session Utilities', () => {
 
       setSessionId(newSessionId)
 
-      expect(localStorage.setItem).toHaveBeenCalledWith('sessionId', newSessionId)
+      expect(localStorage.getItem('sessionId')).toBe(newSessionId)
     })
   })
 
@@ -121,15 +113,10 @@ describe('Session Utilities', () => {
 
       storeFingerprint(fingerprint)
 
-      expect(localStorage.setItem).toHaveBeenCalledWith(
-        'deviceFingerprint',
-        JSON.stringify(fingerprint)
-      )
+      expect(localStorage.getItem('deviceFingerprint')).toBe(JSON.stringify(fingerprint))
     })
 
     test('should return null when no fingerprint exists', () => {
-      ;(localStorage.getItem as jest.Mock).mockReturnValue(null)
-
       const fingerprint = getStoredFingerprint()
 
       expect(fingerprint).toBeNull()
@@ -140,9 +127,7 @@ describe('Session Utilities', () => {
         screenWidth: 1920,
         screenHeight: 1080,
       }
-      ;(localStorage.getItem as jest.Mock).mockReturnValue(
-        JSON.stringify(storedFingerprint)
-      )
+      localStorage.setItem('deviceFingerprint', JSON.stringify(storedFingerprint))
 
       const fingerprint = getStoredFingerprint()
 
@@ -152,8 +137,6 @@ describe('Session Utilities', () => {
 
   describe('initializeSession', () => {
     test('should return client ID and fingerprint', () => {
-      ;(localStorage.getItem as jest.Mock).mockReturnValue(null)
-
       const result = initializeSession()
 
       expect(result).toHaveProperty('clientId')
@@ -164,12 +147,7 @@ describe('Session Utilities', () => {
 
     test('should use existing fingerprint if available', () => {
       const existingFingerprint = { screenWidth: 1920 }
-      ;(localStorage.getItem as jest.Mock).mockImplementation((key) => {
-        if (key === 'deviceFingerprint') {
-          return JSON.stringify(existingFingerprint)
-        }
-        return null
-      })
+      localStorage.setItem('deviceFingerprint', JSON.stringify(existingFingerprint))
 
       const result = initializeSession()
 
@@ -177,26 +155,24 @@ describe('Session Utilities', () => {
     })
 
     test('should generate new fingerprint if none exists', () => {
-      ;(localStorage.getItem as jest.Mock).mockReturnValue(null)
-
       const result = initializeSession()
 
       expect(result.fingerprint).toBeTruthy()
-      expect(localStorage.setItem).toHaveBeenCalledWith(
-        'deviceFingerprint',
-        expect.any(String)
-      )
+      expect(localStorage.getItem('deviceFingerprint')).toBeTruthy()
     })
   })
 
   describe('clearSession', () => {
     test('should remove all session-related items from localStorage', () => {
+      localStorage.setItem('clientId', 'test')
+      localStorage.setItem('sessionId', 'test')
+      localStorage.setItem('deviceFingerprint', 'test')
+
       clearSession()
 
-      expect(localStorage.removeItem).toHaveBeenCalledWith('clientId')
-      expect(localStorage.removeItem).toHaveBeenCalledWith('sessionId')
-      expect(localStorage.removeItem).toHaveBeenCalledWith('deviceFingerprint')
-      expect(localStorage.removeItem).toHaveBeenCalledTimes(3)
+      expect(localStorage.getItem('clientId')).toBeNull()
+      expect(localStorage.getItem('sessionId')).toBeNull()
+      expect(localStorage.getItem('deviceFingerprint')).toBeNull()
     })
   })
 })

@@ -1,6 +1,16 @@
 import '@testing-library/jest-dom'
 import { beforeEach, afterEach } from '@jest/globals'
 
+// Mock import.meta for Vite
+const importMetaMock = {
+  env: {
+    VITE_API_URL: '/api',
+  },
+}
+
+// @ts-ignore - import.meta doesn't exist in Jest/Node
+global.import = { meta: importMetaMock }
+
 // Create localStorage mock with functional storage
 let localStorageStore: Record<string, string> = {}
 
