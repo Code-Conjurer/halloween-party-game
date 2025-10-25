@@ -4,7 +4,8 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { getCurrentEvent, submitAnswer as apiSubmitAnswer, DisplayEvent } from '../services/api'
+import { getCurrentEvent, submitAnswer as apiSubmitAnswer } from '../services/api'
+import type { DisplayEvent } from '../services/api'
 
 // Polling intervals
 const IDLE_POLL_INTERVAL = 2000 // 2 seconds when no event
