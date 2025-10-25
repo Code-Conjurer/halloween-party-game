@@ -1,0 +1,40 @@
+{
+  "events": [
+    {
+      "id": "e1",
+      "type": "text",
+      "startTime": "now",
+      "endTime": "+5s",
+      "content": "Event 1: Starting now!"
+    },
+    {
+      "id": "e2",
+      "type": "text",
+      "startTime": "+5s",
+      "endTime": "+10s",
+      "content": "Event 2: Five seconds in"
+    },
+    {
+      "id": "e3",
+      "type": "text",
+      "startTime": "+10s",
+      "endTime": "+15s",
+      "content": "Event 3: Ten seconds in"
+    },
+    {
+      "id": "e4",
+      "type": "question",
+      "startTime": "+15s",
+      "endTime": "+25s",
+      "content": "Quick question: yes or no?",
+      "placeholder": "yes/no"
+    },
+    {
+      "id": "e5",
+      "type": "text",
+      "startTime": "+25s",
+      "endTime": "+30s",
+      "content": "Done!"
+    }
+  ]
+}

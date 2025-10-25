@@ -1,0 +1,12 @@
+{
+  "events": [
+    {
+      "id": "instant-q",
+      "type": "question",
+      "startTime": "now",
+      "endTime": "+5m",
+      "content": "What's the first thing that comes to mind?",
+      "placeholder": "Type your answer..."
+    }
+  ]
+}

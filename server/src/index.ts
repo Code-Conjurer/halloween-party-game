@@ -5,6 +5,7 @@ import { readFileSync } from 'fs'
 import { GameDatabase } from './database/db.js'
 import { EventScheduler } from './eventScheduler.js'
 import { createApiRoutes } from './routes/api.js'
+import { loadTestEventFile } from './testEventLoader.js'
 
 // Load environment variables
 dotenv.config()
@@ -24,8 +25,25 @@ const eventScheduler = new EventScheduler((eventId: string) => {
 })
 
 // Load events from config
-const eventsConfig = JSON.parse(readFileSync('./config/events.json', 'utf-8'))
-eventScheduler.loadEvents(eventsConfig)
+const testEventFile = process.env.TEST_EVENT_FILE
+
+if (testEventFile) {
+  // Load test event configuration
+  console.log(`🧪 Loading test event configuration: ${testEventFile}`)
+  try {
+    const config = loadTestEventFile(testEventFile)
+    eventScheduler.loadEvents(config)
+    console.log(`✅ Loaded ${config.events.length} test events`)
+  } catch (error) {
+    console.error(`❌ Failed to load test events:`, error)
+    throw error
+  }
+} else {
+  // Load production event configuration
+  console.log(`📋 Loading production event configuration`)
+  const eventsConfig = JSON.parse(readFileSync('./config/events.json', 'utf-8'))
+  eventScheduler.loadEvents(eventsConfig)
+}
 
 // Middleware
 app.use(express.json())

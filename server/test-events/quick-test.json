@@ -1,0 +1,45 @@
+{
+  "events": [
+    {
+      "id": "welcome",
+      "type": "text",
+      "startTime": "now",
+      "endTime": "+10s",
+      "content": "Welcome to the quick test! First question coming up..."
+    },
+    {
+      "id": "q1",
+      "type": "question",
+      "startTime": "+10s",
+      "endTime": "+30s",
+      "content": "What is your favorite color?",
+      "placeholder": "Enter a color"
+    },
+    {
+      "id": "results1",
+      "type": "text",
+      "startTime": "+30s",
+      "endTime": "+40s",
+      "content": "Thanks for answering! Next question..."
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "startTime": "+40s",
+      "endTime": "+60s",
+      "content": "Pick your favorite fruit:",
+      "options": [
+        { "id": "apple", "text": "Apple", "value": "apple" },
+        { "id": "banana", "text": "Banana", "value": "banana" },
+        { "id": "orange", "text": "Orange", "value": "orange" }
+      ]
+    },
+    {
+      "id": "finale",
+      "type": "text",
+      "startTime": "+60s",
+      "endTime": "+70s",
+      "content": "Test complete! Thanks for participating."
+    }
+  ]
+}
