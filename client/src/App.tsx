@@ -3,27 +3,27 @@ import styles from './App.module.scss'
 import { StaticCanvas } from './components/StaticCanvas'
 import { QuestionDisplay } from './components/QuestionDisplay'
 import { TextDisplay } from './components/TextDisplay'
-import { useEventEngine } from './hooks/useEventEngine'
-import eventsConfig from './events.json'
-import type { EventConfig } from './engine/EventEngine'
+import { useServerPolling } from './hooks/useServerPolling'
+import { initializeSession } from './utils/session'
 
 const normalSpeed = 10;
 const textSpeed = 3
 
 function App() {
-  const { engine, displayState } = useEventEngine()
+  const { displayState, submitAnswer, error, isLoading } = useServerPolling()
 
   useEffect(() => {
-    // Load events from JSON configuration
-    engine.loadEvents(eventsConfig as EventConfig[])
-  }, [engine])
+    // Initialize session on app startup
+    initializeSession()
+  }, [])
 
-  const handleAnswer = (value: string) => {
-    console.log('Answer:', value)
-    engine.emit('answer', { type: 'answer', payload: value })
-
-    // Example: Show a response based on the answer
-    engine.showText(`Hello, ${value}!`)
+  const handleAnswer = async (value: string) => {
+    try {
+      await submitAnswer(value)
+      console.log('Answer submitted:', value)
+    } catch (err) {
+      console.error('Failed to submit answer:', err)
+    }
   }
 
   const frameRate = displayState?.type === 'none' || !displayState ? normalSpeed : textSpeed
@@ -31,6 +31,11 @@ function App() {
   return (
     <div className={styles.container}>
       <StaticCanvas pixelSize={3} frameRate={frameRate}/>
+      {error && (
+        <div className={styles.errorWrapper}>
+          <p>Connection error. Retrying...</p>
+        </div>
+      )}
       {displayState && displayState.type !== 'none' && (
         <div className={styles.questionWrapper}>
           {displayState.type === 'text' && (
@@ -41,6 +46,7 @@ function App() {
               text={displayState.content}
               placeholder={displayState.placeholder || ''}
               onInput={handleAnswer}
+              disabled={isLoading}
             />
           )}
         </div>

@@ -5,14 +5,15 @@ interface QuestionDisplayProps {
   text: string
   onInput?: (value: string) => void
   placeholder?: string
+  disabled?: boolean
 }
 
-export function QuestionDisplay({ text, onInput, placeholder = '' }: QuestionDisplayProps) {
+export function QuestionDisplay({ text, onInput, placeholder = '', disabled = false }: QuestionDisplayProps) {
   const [inputValue, setInputValue] = useState('')
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (onInput) {
+    if (onInput && !disabled) {
       onInput(inputValue)
       setInputValue('')
     }
@@ -30,8 +31,9 @@ export function QuestionDisplay({ text, onInput, placeholder = '' }: QuestionDis
           onChange={(e) => setInputValue(e.target.value)}
           placeholder={placeholder}
           className={styles.input}
+          disabled={disabled}
         />
-        <button type="submit" className={styles.button}>Submit</button>
+        <button type="submit" className={styles.button} disabled={disabled}>Submit</button>
       </form>
     </div>
   )

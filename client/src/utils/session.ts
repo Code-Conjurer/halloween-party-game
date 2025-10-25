@@ -1,3 +1,4 @@
+
 /**
  * Session Management Utilities
  * Handles client identification and session persistence
