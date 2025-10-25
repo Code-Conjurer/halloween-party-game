@@ -274,6 +274,91 @@ describe('EventScheduler', () => {
       // The triggered event should be scheduled with substituted content
       // We can't directly test the scheduled event, but we verified the logic works
     })
+
+    test('should handle object-based triggers with matching key', () => {
+      const yesEvent = createEventFixture({
+        id: 'yes_response',
+        content: 'Great!'
+      })
+
+      const noEvent = createEventFixture({
+        id: 'no_response',
+        content: 'Too bad!'
+      })
+
+      const config = createEventsConfig(1, [{
+        id: 'question',
+        content: 'Do you like it?',
+        type: 'question',
+        triggers: {
+          onAnswer: {
+            'yes': [yesEvent],
+            'no': [noEvent]
+          }
+        }
+      }])
+
+      scheduler.loadEvents(config)
+      scheduler.startGame()
+
+      // Should not throw when answer matches a key
+      scheduler.processAnswer('question', 'yes', 'session1')
+    })
+
+    test('should handle object-based triggers with no matching key', () => {
+      const yesEvent = createEventFixture({
+        id: 'yes_response',
+        content: 'Great!'
+      })
+
+      const config = createEventsConfig(1, [{
+        id: 'question',
+        content: 'Do you like it?',
+        type: 'question',
+        triggers: {
+          onAnswer: {
+            'yes': [yesEvent]
+          }
+        }
+      }])
+
+      scheduler.loadEvents(config)
+      scheduler.startGame()
+
+      // Should not throw when answer doesn't match any key
+      scheduler.processAnswer('question', 'maybe', 'session1')
+    })
+
+    test('should handle empty trigger key from answer', () => {
+      // Create an answer handler that returns empty string
+      const mockAnswerGetter = () => []
+
+      const schedulerWithMock = new EventScheduler(mockAnswerGetter)
+
+      const triggeredEvent = createEventFixture({
+        id: 'triggered',
+        content: 'This should not trigger'
+      })
+
+      const config = createEventsConfig(1, [{
+        id: 'question',
+        content: 'Question',
+        type: 'question',
+        triggers: {
+          onAnswer: [triggeredEvent]
+        }
+      }])
+
+      schedulerWithMock.loadEvents(config)
+      schedulerWithMock.startGame()
+
+      // Process with an answer that evaluates to empty string
+      // In the real answerHandler, strings are returned as-is
+      // But we can test the edge case by using empty string
+      schedulerWithMock.processAnswer('question', '', 'session1')
+
+      schedulerWithMock.reset()
+    })
   })
 
   describe('Variable Substitution', () => {

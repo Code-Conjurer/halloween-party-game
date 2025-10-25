@@ -158,6 +158,24 @@ describe('GameDatabase', () => {
       const answers = db.getAllAnswers()
       expect(answers).toHaveLength(2)
     })
+
+    test('should get all answers by session', () => {
+      const session1 = db.createSession(createSessionFixture())
+      const session2 = db.createSession(createSessionFixture())
+
+      db.recordAnswer(session1.id, 'event_1', 'text', 'Session 1 Answer 1')
+      db.recordAnswer(session1.id, 'event_2', 'text', 'Session 1 Answer 2')
+      db.recordAnswer(session2.id, 'event_1', 'text', 'Session 2 Answer')
+
+      const session1Answers = db.getAnswersBySession(session1.id)
+      const session2Answers = db.getAnswersBySession(session2.id)
+
+      expect(session1Answers).toHaveLength(2)
+      expect(session2Answers).toHaveLength(1)
+      expect(session1Answers[0].answer_value).toBe('Session 1 Answer 1')
+      expect(session1Answers[1].answer_value).toBe('Session 1 Answer 2')
+      expect(session2Answers[0].answer_value).toBe('Session 2 Answer')
+    })
   })
 
   describe('Cursor Management', () => {
@@ -194,6 +212,59 @@ describe('GameDatabase', () => {
 
       const cursor = db.getSessionCursor(session.id)
       expect(cursor).toBe(7)
+    })
+  })
+
+  describe('Game State Management', () => {
+    test('should return null when no game state exists', () => {
+      const state = db.loadGameState()
+      expect(state).toBeNull()
+    })
+
+    test('should save and load game state', () => {
+      db.saveGameState({
+        gameStarted: true,
+        gameStartTime: 1234567890,
+        currentEventId: 'event_5'
+      })
+
+      const state = db.loadGameState()
+      expect(state).toBeDefined()
+      expect(state?.gameStarted).toBe(true)
+      expect(state?.gameStartTime).toBe(1234567890)
+      expect(state?.currentEventId).toBe('event_5')
+    })
+
+    test('should update existing game state', () => {
+      db.saveGameState({
+        gameStarted: true,
+        gameStartTime: 1111111111,
+        currentEventId: 'event_1'
+      })
+
+      db.saveGameState({
+        gameStarted: false,
+        gameStartTime: 2222222222,
+        currentEventId: 'event_2'
+      })
+
+      const state = db.loadGameState()
+      expect(state?.gameStarted).toBe(false)
+      expect(state?.gameStartTime).toBe(2222222222)
+      expect(state?.currentEventId).toBe('event_2')
+    })
+
+    test('should reset game state', () => {
+      db.saveGameState({
+        gameStarted: true,
+        gameStartTime: 1234567890,
+        currentEventId: 'event_5'
+      })
+
+      db.resetGameState()
+
+      const state = db.loadGameState()
+      expect(state).toBeNull()
     })
   })
 
