@@ -112,6 +112,29 @@ describe('GameDatabase', () => {
       expect(answers[0].answer_value).toBe('My answer')
     })
 
+    test('should record non-string answers as JSON', () => {
+      const sessionData = createSessionFixture()
+      const session = db.createSession(sessionData)
+
+      // Record object answer
+      db.recordAnswer(session.id, 'event_1', 'multiple_choice', { selected: 'option_a' })
+
+      // Record number answer
+      db.recordAnswer(session.id, 'event_2', 'number', 42)
+
+      // Record array answer
+      db.recordAnswer(session.id, 'event_3', 'array', ['option1', 'option2'])
+
+      const answers = db.getAnswersByEvent('event_1')
+      expect(answers[0].answer_value).toBe('{"selected":"option_a"}')
+
+      const numberAnswer = db.getAnswersByEvent('event_2')
+      expect(numberAnswer[0].answer_value).toBe('42')
+
+      const arrayAnswer = db.getAnswersByEvent('event_3')
+      expect(arrayAnswer[0].answer_value).toBe('["option1","option2"]')
+    })
+
     test('should check if session has answered event', () => {
       const sessionData = createSessionFixture()
       const session = db.createSession(sessionData)
@@ -265,6 +288,32 @@ describe('GameDatabase', () => {
 
       const state = db.loadGameState()
       expect(state).toBeNull()
+    })
+
+    test('should handle partial game state with null values', () => {
+      db.saveGameState({
+        gameStarted: false
+        // gameStartTime and currentEventId are undefined
+      })
+
+      const state = db.loadGameState()
+      expect(state).toBeDefined()
+      expect(state?.gameStarted).toBe(false)
+      expect(state?.gameStartTime).toBeNull()
+      expect(state?.currentEventId).toBeNull()
+    })
+
+    test('should handle game state with only gameStarted=false', () => {
+      db.saveGameState({
+        gameStarted: false,
+        gameStartTime: null,
+        currentEventId: null
+      })
+
+      const state = db.loadGameState()
+      expect(state?.gameStarted).toBe(false)
+      expect(state?.gameStartTime).toBeNull()
+      expect(state?.currentEventId).toBeNull()
     })
   })
 
