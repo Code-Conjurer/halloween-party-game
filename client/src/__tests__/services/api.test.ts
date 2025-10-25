@@ -7,12 +7,12 @@ import {
 } from '../../services/api'
 
 // Mock fetch globally
-global.fetch = jest.fn() as jest.Mock
+global.fetch = jest.fn() as jest.MockedFunction<typeof fetch>
 
 describe('API Client', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    ;(localStorage.getItem as jest.Mock).mockReturnValue(null)
+    // Note: localStorage is automatically cleared before each test via setup.ts
   })
 
   describe('getCurrentEvent', () => {

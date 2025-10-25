@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach, jest } from '@jest/globals'
+import { describe, test, expect } from '@jest/globals'
 import {
   getOrCreateClientId,
   generateFingerprint,
@@ -11,13 +11,7 @@ import {
 } from '../../utils/session'
 
 describe('Session Utilities', () => {
-  beforeEach(() => {
-    // Clear all mocks before each test
-    jest.clearAllMocks()
-    ;(localStorage.getItem as jest.Mock).mockReturnValue(null)
-    ;(localStorage.setItem as jest.Mock).mockClear()
-    ;(localStorage.removeItem as jest.Mock).mockClear()
-  })
+  // Note: localStorage is automatically cleared before each test via setup.ts
 
   describe('getOrCreateClientId', () => {
     test('should return existing client ID from localStorage', () => {
