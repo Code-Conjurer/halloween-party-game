@@ -1,0 +1,30 @@
+{
+  "name": "halloween-party-game",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "test": "concurrently \"npm run test:server\" \"npm run test:client\"",
+    "test:server": "cd server && npm test",
+    "test:client": "cd client && npm test",
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Code-Conjurer/halloween-party-game.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Code-Conjurer/halloween-party-game/issues"
+  },
+  "homepage": "https://github.com/Code-Conjurer/halloween-party-game#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
