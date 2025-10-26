@@ -33,7 +33,7 @@ export interface SessionResponse {
 }
 
 // Get base URL from environment or default to /api
-const API_BASE_URL = '/api'
+const API_BASE_URL = 'http://localhost:3001/api'
 
 // Retry configuration
 const MAX_RETRIES = 3

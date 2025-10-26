@@ -32,6 +32,8 @@ export function useServerPolling(): UseServerPollingReturn {
 
   const isMountedRef = useRef(true)
   const pollRef = useRef<(() => Promise<void>) | null>(null)
+  const displayStateRef = useRef<DisplayEvent | null>(null)
+  const errorRef = useRef<Error | null>(null)
 
   /**
    * Submit an answer and trigger immediate refresh
@@ -56,10 +58,22 @@ export function useServerPolling(): UseServerPollingReturn {
   }, [displayState])
 
   /**
+   * Keep refs in sync with state for interval calculation
+   */
+  useEffect(() => {
+    displayStateRef.current = displayState
+  }, [displayState])
+
+  useEffect(() => {
+    errorRef.current = error
+  }, [error])
+
+  /**
    * Set up polling effect
    */
   useEffect(() => {
-    let intervalId: number | null = null
+    let timeoutId: number | null = null
+    let currentBackoff = MIN_BACKOFF
 
     const poll = async () => {
       if (!isMountedRef.current) return
@@ -67,24 +81,31 @@ export function useServerPolling(): UseServerPollingReturn {
       try {
         setIsPolling(true)
         const event = await getCurrentEvent()
+        console.log(event, isMountedRef.current);
 
         if (!isMountedRef.current) return
 
         setDisplayState(event)
+        displayStateRef.current = event
         setError(null)
+        errorRef.current = null
         setIsLoading(false)
 
         // Reset backoff on successful poll
+        currentBackoff = MIN_BACKOFF
         setBackoffDelay(MIN_BACKOFF)
       } catch (err) {
         if (!isMountedRef.current) return
 
         console.error('Polling error:', err)
-        setError(err instanceof Error ? err : new Error('Unknown polling error'))
+        const errorObj = err instanceof Error ? err : new Error('Unknown polling error')
+        setError(errorObj)
+        errorRef.current = errorObj
         setIsLoading(false)
 
         // Increase backoff delay exponentially
-        setBackoffDelay(prev => Math.min(prev * 2, MAX_BACKOFF))
+        currentBackoff = Math.min(currentBackoff * 2, MAX_BACKOFF)
+        setBackoffDelay(currentBackoff)
       } finally {
         if (isMountedRef.current) {
           setIsPolling(false)
@@ -95,35 +116,40 @@ export function useServerPolling(): UseServerPollingReturn {
     // Expose poll function to submitAnswer via ref
     pollRef.current = poll
 
-    // Determine polling interval based on current state
-    const hasActiveEvent = displayState && displayState.type !== 'none'
-    const pollInterval = hasActiveEvent ? ACTIVE_POLL_INTERVAL : IDLE_POLL_INTERVAL
+    const scheduleNext = () => {
+      if (!isMountedRef.current) return
 
-    // Use backoff delay if there's an error
-    const actualInterval = error ? backoffDelay : pollInterval
+      // Calculate next interval based on current state
+      const hasActiveEvent = displayStateRef.current && displayStateRef.current.type !== 'none'
+      const pollInterval = hasActiveEvent ? ACTIVE_POLL_INTERVAL : IDLE_POLL_INTERVAL
+      const actualInterval = errorRef.current ? currentBackoff : pollInterval
 
-    // Initial poll
-    poll()
+      timeoutId = window.setTimeout(async () => {
+        await poll()
+        scheduleNext()
+      }, actualInterval)
+    }
 
-    // Set up interval
-    intervalId = window.setInterval(poll, actualInterval)
+    // Initial poll and start polling loop
+    poll().then(() => scheduleNext())
 
     // Cleanup function
     return () => {
-      if (intervalId !== null) {
-        clearInterval(intervalId)
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId)
       }
     }
-  }, [displayState, error, backoffDelay])
+  }, [])
 
   /**
    * Cleanup on unmount
    */
   useEffect(() => {
+    isMountedRef.current = true
     return () => {
       isMountedRef.current = false
     }
-  }, [])
+  }, []);
 
   return {
     displayState,
