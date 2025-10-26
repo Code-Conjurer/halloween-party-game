@@ -13,11 +13,13 @@ export function QuestionDisplay({ text, onInput, placeholder = '', disabled = fa
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (onInput && !disabled) {
+    if (onInput && !disabled && inputValue.trim()) {
       onInput(inputValue)
       setInputValue('')
     }
   }
+
+  const isSubmitDisabled = disabled || !inputValue.trim()
 
   return (
     <div className={styles.container}>
@@ -33,7 +35,7 @@ export function QuestionDisplay({ text, onInput, placeholder = '', disabled = fa
           className={styles.input}
           disabled={disabled}
         />
-        <button type="submit" className={styles.button} disabled={disabled}>Submit</button>
+        <button type="submit" className={styles.button} disabled={isSubmitDisabled}>Submit</button>
       </form>
     </div>
   )
