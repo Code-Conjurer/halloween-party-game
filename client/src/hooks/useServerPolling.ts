@@ -58,6 +58,29 @@ export function useServerPolling(): UseServerPollingReturn {
   }, [displayState])
 
   /**
+   * Auto-acknowledge non-interactive events (text displays)
+   * This allows the user to progress past text-only events
+   */
+  useEffect(() => {
+    if (!displayState || displayState.type === 'none' || displayState.hasAnswered) {
+      return
+    }
+
+    // Auto-acknowledge text events immediately (user just needs to see them)
+    if (displayState.type === 'text') {
+      const acknowledgeEvent = async () => {
+        try {
+          await apiSubmitAnswer(displayState.eventId, { acknowledged: true })
+          console.log('Auto-acknowledged text event:', displayState.eventId)
+        } catch (err) {
+          console.error('Failed to auto-acknowledge text event:', err)
+        }
+      }
+      acknowledgeEvent()
+    }
+  }, [displayState])
+
+  /**
    * Keep refs in sync with state for interval calculation
    */
   useEffect(() => {
@@ -85,8 +108,22 @@ export function useServerPolling(): UseServerPollingReturn {
 
         if (!isMountedRef.current) return
 
-        setDisplayState(event)
-        displayStateRef.current = event
+        // Only update displayState if the event has changed
+        // This prevents resetting timers and other component state
+        const currentEvent = displayStateRef.current
+        const hasEventChanged = !currentEvent ||
+          currentEvent.eventId !== event.eventId ||
+          currentEvent.type !== event.type
+
+        if (hasEventChanged) {
+          setDisplayState(event)
+          displayStateRef.current = event
+        } else {
+          // Update ref without triggering re-render
+          // This keeps answer counts and other metadata fresh
+          displayStateRef.current = event
+        }
+
         setError(null)
         errorRef.current = null
         setIsLoading(false)
