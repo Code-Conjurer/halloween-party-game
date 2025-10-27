@@ -5,9 +5,10 @@ import styles from './StaticCanvas.module.scss'
 interface StaticCanvasProps {
   pixelSize?: number
   frameRate?: number // frames per second
+  colorTint?: 'red' | 'normal'
 }
 
-export function StaticCanvas({ pixelSize = 1, frameRate = 60 }: StaticCanvasProps) {
+export function StaticCanvas({ pixelSize = 1, frameRate = 60, colorTint = 'normal' }: StaticCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -39,7 +40,7 @@ export function StaticCanvas({ pixelSize = 1, frameRate = 60 }: StaticCanvasProp
 
       if (elapsed >= frameInterval) {
         lastFrameTime = currentTime - (elapsed % frameInterval)
-        generateStatic(ctx, canvas.width, canvas.height, pixelSize)
+        generateStatic(ctx, canvas.width, canvas.height, pixelSize, colorTint)
       }
     }
 
@@ -49,7 +50,7 @@ export function StaticCanvas({ pixelSize = 1, frameRate = 60 }: StaticCanvasProp
       window.removeEventListener('resize', resizeCanvas)
       cancelAnimationFrame(animationId)
     }
-  }, [pixelSize, frameRate])
+  }, [pixelSize, frameRate, colorTint])
 
   return (
     <div ref={containerRef} className={styles.container}>

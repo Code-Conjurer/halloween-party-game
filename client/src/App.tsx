@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import styles from './App.module.scss'
 import { StaticCanvas } from './components/StaticCanvas'
 import { QuestionDisplay } from './components/QuestionDisplay'

@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { getCurrentEvent, submitAnswer as apiSubmitAnswer } from '../services/api'
-import type { DisplayEvent } from '../services/api'
+import type { DisplayEvent, AnswerResponse } from '../services/api'
 
 // Polling intervals
 const IDLE_POLL_INTERVAL = 2000 // 2 seconds when no event
@@ -17,7 +17,7 @@ const MAX_BACKOFF = 30000 // 30 seconds
 
 interface UseServerPollingReturn {
   displayState: DisplayEvent | null
-  submitAnswer: (answer: any) => Promise<void>
+  submitAnswer: (answer: any) => Promise<AnswerResponse>
   error: Error | null
   isLoading: boolean
   isPolling: boolean
@@ -38,17 +38,19 @@ export function useServerPolling(): UseServerPollingReturn {
   /**
    * Submit an answer and trigger immediate refresh
    */
-  const submitAnswer = useCallback(async (answer: any) => {
+  const submitAnswer = useCallback(async (answer: any): Promise<AnswerResponse> => {
     if (!displayState || !displayState.eventId) {
       throw new Error('No active event to answer')
     }
 
     try {
       setIsLoading(true)
-      await apiSubmitAnswer(displayState.eventId, answer)
+      const response = await apiSubmitAnswer(displayState.eventId, answer)
 
       // Immediately poll for updated state
       await pollRef.current?.()
+
+      return response
     } catch (err) {
       console.error('Error submitting answer:', err)
       throw err

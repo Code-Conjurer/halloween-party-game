@@ -2,7 +2,8 @@ export function generateStatic(
   ctx: CanvasRenderingContext2D,
   width: number,
   height: number,
-  pixelSize: number = 1
+  pixelSize: number = 1,
+  colorTint?: 'red' | 'normal'
 ): void {
   const scaledWidth = Math.ceil(width / pixelSize)
   const scaledHeight = Math.ceil(height / pixelSize)
@@ -12,7 +13,17 @@ export function generateStatic(
 
   for (let i = 0; i < buffer.length; i++) {
     const gray = Math.random() * 255
-    buffer[i] = (255 << 24) | (gray << 16) | (gray << 8) | gray
+
+    if (colorTint === 'red') {
+      // Reddish static: keep red channel high, reduce green and blue
+      const red = gray
+      const green = gray * 0.3
+      const blue = gray * 0.3
+      buffer[i] = (255 << 24) | (red << 16) | (green << 8) | blue
+    } else {
+      // Normal grayscale static
+      buffer[i] = (255 << 24) | (gray << 16) | (gray << 8) | gray
+    }
   }
 
   ctx.putImageData(imageData, 0, 0)
