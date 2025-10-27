@@ -6,19 +6,72 @@
       "startTime": "now",
       "content": "What is 2 + 3?",
       "placeholder": "Enter your answer",
+      "validation": {
+        "type": "exact",
+        "correctAnswers": ["5", "five"]
+      },
       "triggers": {
         "onAnswer": {
-          "5": [
+          "correct": [
             {
-              "id": "correct-response",
+              "id": "success-msg",
               "type": "text",
               "startTime": "now",
-              "endTime": "+10s",
+              "endTime": "+3s",
               "content": "Good job! You got it right!"
+            }
+          ],
+          "wrong": [
+            {
+              "id": "wrong-msg",
+              "type": "text",
+              "startTime": "now",
+              "endTime": "+2s",
+              "content": "That's not correct. Try again!"
+            },
+            {
+              "id": "math-question-retry",
+              "type": "question",
+              "startTime": "+2s",
+              "content": "What is 2 + 3?",
+              "placeholder": "Enter your answer",
+              "validation": {
+                "type": "exact",
+                "correctAnswers": ["5", "five"]
+              },
+              "triggers": {
+                "onAnswer": {
+                  "correct": [
+                    {
+                      "id": "success-retry",
+                      "type": "text",
+                      "startTime": "now",
+                      "endTime": "+3s",
+                      "content": "Good job! You got it right!"
+                    }
+                  ],
+                  "wrong": [
+                    {
+                      "id": "still-wrong",
+                      "type": "text",
+                      "startTime": "now",
+                      "endTime": "+5s",
+                      "content": "Still wrong. The answer is 5!"
+                    }
+                  ]
+                }
+              }
             }
           ]
         }
       }
+    },
+    {
+      "id": "next-question",
+      "type": "text",
+      "startTime": "now",
+      "endTime": "+5s",
+      "content": "Great! Moving on to the next question..."
     }
   ]
 }

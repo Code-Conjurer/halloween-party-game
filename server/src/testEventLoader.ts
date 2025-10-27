@@ -18,6 +18,7 @@ export interface TestEventConfig {
     props?: Record<string, any>
     duration?: number
     mandatory?: boolean
+    validation?: EventConfig['validation']
     triggers?: EventConfig['triggers']
   }>
 }
@@ -113,6 +114,7 @@ export function processTestConfig(
       props: event.props,
       duration,
       mandatory: event.mandatory,
+      validation: event.validation,
       triggers: event.triggers
     }
   })

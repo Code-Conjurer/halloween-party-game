@@ -4,6 +4,7 @@ import { GameDatabase } from '../database/db.js'
 import { EventScheduler } from '../eventScheduler.js'
 import { sessionMiddleware } from '../middleware/session.js'
 import { AnswerSubmission, GameStatusResponse } from '../types.js'
+import { validateAnswer } from '../answerHandler.js'
 
 export function createApiRoutes(db: GameDatabase, eventScheduler: EventScheduler) {
   const router = Router()
@@ -50,7 +51,7 @@ export function createApiRoutes(db: GameDatabase, eventScheduler: EventScheduler
 
   /**
    * POST /api/answer
-   * Submit an answer and advance cursor if not mandatory
+   * Submit an answer and advance cursor if correct (or no validation)
    * Requires session tracking
    */
   router.post('/answer', sessionMiddleware(db), (req: Request, res: Response, next) => {
@@ -62,29 +63,41 @@ export function createApiRoutes(db: GameDatabase, eventScheduler: EventScheduler
         return res.status(400).json({ error: 'eventId and answer are required' })
       }
 
+      // Get the event to check for validation rules
+      const events = eventScheduler.getAllEvents()
+      const event = events.find(e => e.id === eventId)
+
+      if (!event) {
+        return res.status(404).json({ error: 'Event not found' })
+      }
+
+      // Validate the answer
+      const isCorrect = validateAnswer(answer, event)
+
       // Check for duplicate
       const duplicate = db.hasSessionAnswered(sessionId, eventId)
 
-      if (!duplicate) {
+      // Only record answer and advance cursor if correct (or no validation)
+      if (!duplicate && isCorrect) {
         // Record answer
         const answerType = typeof answer === 'string' ? 'text' : 'multiple_choice'
         db.recordAnswer(sessionId, eventId, answerType, answer)
 
-        // Process answer for conditional events
-        eventScheduler.processAnswer(eventId, answer, sessionId)
-
         // Check if this is the event at user's cursor (not a mandatory catch-up)
         const cursorIndex = db.getSessionCursor(sessionId)
-        const events = eventScheduler.getAllEvents()
         if (cursorIndex < events.length && events[cursorIndex].id === eventId) {
           // Advance cursor
           db.incrementSessionCursor(sessionId)
         }
       }
 
+      // Process answer for conditional events (triggers happen regardless of correctness)
+      eventScheduler.processAnswer(eventId, answer, sessionId)
+
       res.json({
         success: true,
-        duplicate
+        duplicate,
+        correct: isCorrect
       })
     } catch (error) {
       next(error)

@@ -14,6 +14,12 @@ export interface EventConfig {
   props?: Record<string, any>
   duration?: number // Auto-hide after N milliseconds
   mandatory?: boolean // If true, user cannot skip this event (default: false)
+  validation?: {
+    type: 'exact' | 'regex' | 'custom'
+    correctAnswers?: string[]        // For exact matching (case-insensitive, trimmed)
+    pattern?: string                 // For regex matching
+    customValidator?: string         // Name of custom validation function
+  }
   triggers?: {
     onAnswer?: Record<string, EventConfig[]> | EventConfig[]
     onComplete?: EventConfig[]
@@ -77,6 +83,7 @@ export interface AnswerSubmission {
 export interface AnswerResponse {
   success: boolean
   duplicate: boolean
+  correct: boolean  // Whether the answer passed validation (always true if no validation)
 }
 
 export interface SessionRegistration {

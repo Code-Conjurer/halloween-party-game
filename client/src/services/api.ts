@@ -25,6 +25,7 @@ export interface GameStatus {
 export interface AnswerResponse {
   success: boolean
   duplicate: boolean
+  correct: boolean  // Whether the answer passed validation (always true if no validation)
 }
 
 export interface SessionResponse {
