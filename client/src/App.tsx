@@ -13,6 +13,8 @@ const textSpeed = 3
 
 function App() {
   const { displayState, submitAnswer, error, isLoading } = useServerPolling()
+  const [isWrongAnswer, setIsWrongAnswer] = useState(false)
+  const questionWrapperRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     // Initialize session on app startup
@@ -21,11 +23,20 @@ function App() {
 
   const handleAnswer = async (value: any) => {
     try {
-      await submitAnswer(value)
-      console.log('Answer submitted:', value)
+      const response = await submitAnswer(value)
+      console.log('Answer submitted:', value, 'Correct:', response.correct)
+
+      // Trigger wrong answer feedback
+      if (!response.correct) {
+        setIsWrongAnswer(true)
+      }
     } catch (err) {
       console.error('Failed to submit answer:', err)
     }
+  }
+
+  const handleAnimationEnd = () => {
+    setIsWrongAnswer(false)
   }
 
   const handleCustomComplete = async (data?: any) => {
@@ -36,18 +47,23 @@ function App() {
     console.error('Custom component failed:', reason)
   }
 
-  const frameRate = displayState?.type === 'none' || !displayState ? normalSpeed : textSpeed
+  const frameRate = isWrongAnswer ? normalSpeed : (displayState?.type === 'none' || !displayState ? normalSpeed : textSpeed)
+  const colorTint = isWrongAnswer ? 'red' : 'normal'
 
   return (
     <div className={styles.container}>
-      <StaticCanvas pixelSize={3} frameRate={frameRate}/>
+      <StaticCanvas pixelSize={3} frameRate={frameRate} colorTint={colorTint} />
       {error && (
         <div className={styles.errorWrapper}>
           <p>Connection error. Retrying...</p>
         </div>
       )}
       {displayState && displayState.type !== 'none' && (
-        <div className={styles.questionWrapper}>
+        <div
+          ref={questionWrapperRef}
+          className={`${styles.questionWrapper} ${isWrongAnswer ? styles.shake : ''}`}
+          onAnimationEnd={handleAnimationEnd}
+        >
           {displayState.type === 'text' && (
             <TextDisplay text={displayState.content} />
           )}
