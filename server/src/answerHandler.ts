@@ -1,4 +1,4 @@
-import { EventConfig } from './types.js'
+import { EventConfig, ValidationConfig } from './types.js'
 
 /**
  * Context provided to answer evaluation
@@ -17,6 +17,11 @@ export interface AnswerContext {
  * @returns true if answer is correct, false otherwise
  */
 export function validateAnswer(answer: any, event: EventConfig): boolean {
+  // Check if event type supports validation
+  if (event.type !== 'question' && event.type !== 'multiple_choice') {
+    return true
+  }
+
   if (!event.validation) {
     // No validation rules = accept any answer
     return true
@@ -26,27 +31,29 @@ export function validateAnswer(answer: any, event: EventConfig): boolean {
   // Normalize answer: trim whitespace and lowercase
   const answerStr = String(answer).trim().toLowerCase()
 
-  // Exact match validation
-  if (validation.type === 'exact' && validation.correctAnswers) {
-    return validation.correctAnswers.some(
-      correct => correct.trim().toLowerCase() === answerStr
-    )
-  }
+  // TypeScript now knows which fields are available based on validation.type
+  switch (validation.type) {
+    case 'exact':
+      // TypeScript knows validation.correctAnswers exists and is required
+      return validation.correctAnswers.some(
+        correct => correct.trim().toLowerCase() === answerStr
+      )
 
-  // Regex validation (tested against normalized answer)
-  if (validation.type === 'regex' && validation.pattern) {
-    const regex = new RegExp(validation.pattern)
-    return regex.test(answerStr)
-  }
+    case 'regex':
+      // TypeScript knows validation.pattern exists and is required
+      const regex = new RegExp(validation.pattern)
+      return regex.test(answerStr)
 
-  // Custom validation (to be implemented later)
-  if (validation.type === 'custom' && validation.customValidator) {
-    console.warn(`Custom validator "${validation.customValidator}" not yet implemented`)
-    return true
-  }
+    case 'custom':
+      // TypeScript knows validation.customValidator exists and is required
+      console.warn(`Custom validator "${validation.customValidator}" not yet implemented`)
+      return true
 
-  // Default: accept answer
-  return true
+    default:
+      // Exhaustiveness check - TypeScript will error if we miss a case
+      const _exhaustive: never = validation
+      return true
+  }
 }
 
 /**

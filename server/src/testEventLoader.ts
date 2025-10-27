@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs'
 import { join } from 'path'
-import { EventConfig } from './types.js'
+import { EventConfig, ValidationConfig } from './types.js'
 
 /**
  * Test Event Configuration (with relative timing)
@@ -18,8 +18,13 @@ export interface TestEventConfig {
     props?: Record<string, any>
     duration?: number
     mandatory?: boolean
-    validation?: EventConfig['validation']
-    triggers?: EventConfig['triggers']
+    validation?: ValidationConfig
+    triggers?: {
+      onAnswer?: Record<string, EventConfig[]> | EventConfig[]
+      onComplete?: EventConfig[]
+      onFail?: EventConfig[]
+      onEvent?: Record<string, EventConfig[]>
+    }
   }>
 }
 
