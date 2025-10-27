@@ -155,7 +155,10 @@ describe('Answer Handler', () => {
       }
 
       // Context includes event for future custom logic
-      expect(context.event.content).toBe('What is your favorite color?')
+      expect(context.event.type).toBe('question')
+      if (context.event.type === 'question') {
+        expect(context.event.content).toBe('What is your favorite color?')
+      }
 
       const result = evaluateAnswer(context)
       expect(result).toBe('blue')

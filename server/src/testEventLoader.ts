@@ -108,19 +108,59 @@ export function processTestConfig(
     }
 
     // Convert to EventConfig format with triggerAt
-    return {
+    // Build the base config common to all types
+    const baseConfig = {
       id: event.id,
       triggerAt: new Date(startTime).toISOString(),
-      type: event.type as EventConfig['type'],
-      content: event.content,
-      placeholder: event.placeholder,
-      options: event.options,
-      componentName: event.componentName,
-      props: event.props,
       duration,
       mandatory: event.mandatory,
-      validation: event.validation,
       triggers: event.triggers
+    }
+
+    // Create the appropriate event type based on the type field
+    switch (event.type) {
+      case 'text':
+        return {
+          ...baseConfig,
+          type: 'text' as const,
+          content: event.content
+        }
+
+      case 'question':
+        return {
+          ...baseConfig,
+          type: 'question' as const,
+          content: event.content,
+          placeholder: event.placeholder,
+          validation: event.validation
+        }
+
+      case 'multiple_choice':
+        return {
+          ...baseConfig,
+          type: 'multiple_choice' as const,
+          content: event.content,
+          options: event.options || [],
+          validation: event.validation
+        }
+
+      case 'custom_component':
+        return {
+          ...baseConfig,
+          type: 'custom_component' as const,
+          componentName: event.componentName || '',
+          props: event.props
+        }
+
+      case 'none':
+        return {
+          ...baseConfig,
+          type: 'none' as const,
+          content: event.content
+        }
+
+      default:
+        throw new Error(`Unknown event type: ${event.type}`)
     }
   })
 

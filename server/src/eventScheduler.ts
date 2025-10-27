@@ -64,19 +64,55 @@ export class EventScheduler {
   }
 
   /**
+   * Get content from an event (returns empty string for custom_component)
+   */
+  private getEventContent(event: EventConfig): string {
+    if (event.type === 'custom_component') return ''
+    return event.content
+  }
+
+  /**
    * Convert EventConfig to DisplayEvent
    */
   private eventToDisplayEvent(event: EventConfig): DisplayEvent {
-    return {
+    const base = {
       type: event.type,
       eventId: event.id,
-      content: event.content || '',
-      placeholder: event.placeholder,
-      options: event.options,
-      componentName: event.componentName,
-      props: event.props,
       duration: event.duration,
       mandatory: event.mandatory
+    }
+
+    switch (event.type) {
+      case 'text':
+        return { ...base, type: 'text', content: event.content }
+
+      case 'question':
+        return {
+          ...base,
+          type: 'question',
+          content: event.content,
+          placeholder: event.placeholder
+        }
+
+      case 'multiple_choice':
+        return {
+          ...base,
+          type: 'multiple_choice',
+          content: event.content,
+          options: event.options
+        }
+
+      case 'custom_component':
+        return {
+          ...base,
+          type: 'custom_component',
+          componentName: event.componentName,
+          props: event.props,
+          content: ''
+        }
+
+      case 'none':
+        return { ...base, type: 'none', content: event.content }
     }
   }
 
@@ -201,12 +237,14 @@ export class EventScheduler {
 
     // Schedule triggered events immediately with variable substitution
     triggeredEvents.forEach(triggeredEvent => {
-      const immediateEvent = {
+      const content = this.substituteVariables(this.getEventContent(triggeredEvent), { answer })
+
+      const immediateEvent: EventConfig = {
         ...triggeredEvent,
         triggerAt: new Date().toISOString(),
-        // Substitute {answer} in content
-        content: this.substituteVariables(triggeredEvent.content || '', { answer })
-      }
+        ...(triggeredEvent.type !== 'custom_component' && { content })
+      } as EventConfig
+
       this.scheduleEvent(immediateEvent)
     })
   }

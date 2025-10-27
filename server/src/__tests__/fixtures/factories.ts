@@ -1,5 +1,12 @@
 import { GameDatabase } from '../../database/db.js'
-import { EventConfig } from '../../types.js'
+import {
+  EventConfig,
+  TextEventConfig,
+  QuestionEventConfig,
+  MultipleChoiceEventConfig,
+  CustomComponentEventConfig,
+  NoneEventConfig
+} from '../../types.js'
 
 let sessionCounter = 0
 let eventCounter = 0
@@ -77,9 +84,9 @@ export function createAnswerFixture(
 }
 
 /**
- * Factory for creating test events
+ * Factory for creating text events
  */
-export function createEventFixture(overrides: Partial<EventConfig> = {}): EventConfig {
+export function createTextEvent(overrides?: Partial<TextEventConfig>): TextEventConfig {
   const index = eventCounter++
   const now = new Date()
   const triggerTime = new Date(now.getTime() + (index * 5000)).toISOString()
@@ -91,6 +98,86 @@ export function createEventFixture(overrides: Partial<EventConfig> = {}): EventC
     content: `Event ${index}`,
     ...overrides
   }
+}
+
+/**
+ * Factory for creating question events
+ */
+export function createQuestionEvent(overrides?: Partial<QuestionEventConfig>): QuestionEventConfig {
+  const index = eventCounter++
+  const now = new Date()
+  const triggerTime = new Date(now.getTime() + (index * 5000)).toISOString()
+
+  return {
+    id: `event_${index}`,
+    triggerAt: triggerTime,
+    type: 'question',
+    content: `Question ${index}`,
+    ...overrides
+  }
+}
+
+/**
+ * Factory for creating multiple choice events
+ */
+export function createMultipleChoiceEvent(overrides?: Partial<MultipleChoiceEventConfig>): MultipleChoiceEventConfig {
+  const index = eventCounter++
+  const now = new Date()
+  const triggerTime = new Date(now.getTime() + (index * 5000)).toISOString()
+
+  return {
+    id: `event_${index}`,
+    triggerAt: triggerTime,
+    type: 'multiple_choice',
+    content: `Choose for ${index}`,
+    options: [
+      { id: 'opt1', text: 'Option 1', value: 'opt1' },
+      { id: 'opt2', text: 'Option 2', value: 'opt2' }
+    ],
+    ...overrides
+  }
+}
+
+/**
+ * Factory for creating custom component events
+ */
+export function createCustomComponentEvent(overrides?: Partial<CustomComponentEventConfig>): CustomComponentEventConfig {
+  const index = eventCounter++
+  const now = new Date()
+  const triggerTime = new Date(now.getTime() + (index * 5000)).toISOString()
+
+  return {
+    id: `event_${index}`,
+    triggerAt: triggerTime,
+    type: 'custom_component',
+    componentName: `TestComponent${index}`,
+    ...overrides
+  }
+}
+
+/**
+ * Factory for creating none events
+ */
+export function createNoneEvent(overrides?: Partial<NoneEventConfig>): NoneEventConfig {
+  const index = eventCounter++
+  const now = new Date()
+  const triggerTime = new Date(now.getTime() + (index * 5000)).toISOString()
+
+  return {
+    id: `event_${index}`,
+    triggerAt: triggerTime,
+    type: 'none',
+    content: '',
+    ...overrides
+  }
+}
+
+/**
+ * Generic factory for creating test events (defaults to text)
+ * For type-safe factories, use specific functions above
+ */
+export function createEventFixture(overrides?: Partial<TextEventConfig>): EventConfig {
+  return createTextEvent(overrides)
 }
 
 /**

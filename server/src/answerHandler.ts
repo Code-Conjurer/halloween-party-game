@@ -71,7 +71,7 @@ export function evaluateAnswer(context: AnswerContext): string | null {
   const { answer, event } = context
 
   // If event has validation, return semantic key
-  if (event.validation) {
+  if ((event.type === 'question' || event.type === 'multiple_choice') && event.validation) {
     const isCorrect = validateAnswer(answer, event)
     return isCorrect ? 'correct' : 'wrong'
   }
