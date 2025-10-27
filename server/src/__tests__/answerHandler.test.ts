@@ -1,6 +1,6 @@
 import { describe, test, expect } from '@jest/globals'
 import { evaluateAnswer, AnswerContext } from '../answerHandler.js'
-import { createEventFixture } from './fixtures/factories.js'
+import { createEventFixture, createQuestionEvent } from './fixtures/factories.js'
 
 describe('Answer Handler', () => {
   describe('evaluateAnswer', () => {
@@ -141,8 +141,7 @@ describe('Answer Handler', () => {
     })
 
     test('should have access to event configuration', () => {
-      const event = createEventFixture({
-        type: 'question',
+      const event = createQuestionEvent({
         content: 'What is your favorite color?'
       })
 
@@ -178,8 +177,7 @@ describe('Answer Handler', () => {
           { sessionId: 'session_2', answer: 'red' },
           { sessionId: 'session_3', answer: 'blue' }
         ],
-        event: createEventFixture({   // Event configuration
-          type: 'question',
+        event: createQuestionEvent({   // Event configuration
           content: 'What is your favorite color?',
           // Future: Could include custom validation rules here
         })

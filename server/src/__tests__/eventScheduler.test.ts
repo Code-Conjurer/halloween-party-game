@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals'
 import { EventScheduler } from '../eventScheduler.js'
-import { resetCounters, createEventFixture, createEventsConfig } from './fixtures/factories.js'
+import { resetCounters, createEventFixture, createEventsConfig, createTextEvent, createQuestionEvent, createMultipleChoiceEvent } from './fixtures/factories.js'
 
 describe('EventScheduler', () => {
   let scheduler: EventScheduler
@@ -82,9 +82,9 @@ describe('EventScheduler', () => {
   describe('Event for Session', () => {
     test('should return event at cursor position', () => {
       const config = createEventsConfig(3, [
-        { content: 'First event' },
-        { content: 'Second event' },
-        { content: 'Third event' }
+        createTextEvent({ content: 'First event' }),
+        createTextEvent({ content: 'Second event' }),
+        createTextEvent({ content: 'Third event' })
       ])
       scheduler.loadEvents(config)
 
@@ -113,10 +113,10 @@ describe('EventScheduler', () => {
 
     test('should return unanswered mandatory event before cursor', () => {
       const config = createEventsConfig(4, [
-        { content: 'Event 0', mandatory: false },
-        { content: 'Mandatory Event 1', mandatory: true },
-        { content: 'Mandatory Event 2', mandatory: true },
-        { content: 'Event 3', mandatory: false }
+        createTextEvent({ content: 'Event 0', mandatory: false }),
+        createTextEvent({ content: 'Mandatory Event 1', mandatory: true }),
+        createTextEvent({ content: 'Mandatory Event 2', mandatory: true }),
+        createTextEvent({ content: 'Event 3', mandatory: false })
       ])
       scheduler.loadEvents(config)
 
@@ -134,10 +134,10 @@ describe('EventScheduler', () => {
 
     test('should skip answered mandatory events', () => {
       const config = createEventsConfig(4, [
-        { content: 'Event 0' },
-        { content: 'Mandatory Event 1', mandatory: true },
-        { content: 'Mandatory Event 2', mandatory: true },
-        { content: 'Event 3' }
+        createTextEvent({ content: 'Event 0' }),
+        createTextEvent({ content: 'Mandatory Event 1', mandatory: true }),
+        createTextEvent({ content: 'Mandatory Event 2', mandatory: true }),
+        createTextEvent({ content: 'Event 3' })
       ])
       scheduler.loadEvents(config)
 
@@ -154,9 +154,9 @@ describe('EventScheduler', () => {
 
     test('should return first unanswered mandatory when multiple exist', () => {
       const config = createEventsConfig(3, [
-        { content: 'Mandatory 0', mandatory: true },
-        { content: 'Mandatory 1', mandatory: true },
-        { content: 'Event 2' }
+        createTextEvent({ content: 'Mandatory 0', mandatory: true }),
+        createTextEvent({ content: 'Mandatory 1', mandatory: true }),
+        createTextEvent({ content: 'Event 2' })
       ])
       scheduler.loadEvents(config)
 
@@ -170,10 +170,10 @@ describe('EventScheduler', () => {
 
     test('should not check events after cursor for mandatory', () => {
       const config = createEventsConfig(4, [
-        { content: 'Event 0' },
-        { content: 'Event 1' },
-        { content: 'Mandatory Event 2', mandatory: true },
-        { content: 'Event 3' }
+        createTextEvent({ content: 'Event 0' }),
+        createTextEvent({ content: 'Event 1' }),
+        createTextEvent({ content: 'Mandatory Event 2', mandatory: true }),
+        createTextEvent({ content: 'Event 3' })
       ])
       scheduler.loadEvents(config)
 
@@ -189,13 +189,14 @@ describe('EventScheduler', () => {
 
   describe('Event Conversion', () => {
     test('should convert EventConfig to DisplayEvent', () => {
-      const config = createEventsConfig(1, [{
-        content: 'Test content',
-        placeholder: 'Enter answer',
-        type: 'question',
-        mandatory: true,
-        duration: 5000
-      }])
+      const config = createEventsConfig(1, [
+        createQuestionEvent({
+          content: 'Test content',
+          placeholder: 'Enter answer',
+          mandatory: true,
+          duration: 5000
+        })
+      ])
       scheduler.loadEvents(config)
 
       const hasAnswered = jest.fn(() => false)
@@ -215,13 +216,14 @@ describe('EventScheduler', () => {
     })
 
     test('should include options for multiple choice events', () => {
-      const config = createEventsConfig(1, [{
-        type: 'multiple_choice',
-        options: [
-          { id: 'a', text: 'Option A', value: 'a' },
-          { id: 'b', text: 'Option B', value: 'b' }
-        ]
-      }])
+      const config = createEventsConfig(1, [
+        createMultipleChoiceEvent({
+          options: [
+            { id: 'a', text: 'Option A', value: 'a' },
+            { id: 'b', text: 'Option B', value: 'b' }
+          ]
+        })
+      ])
       scheduler.loadEvents(config)
 
       const hasAnswered = jest.fn(() => false)
@@ -234,7 +236,7 @@ describe('EventScheduler', () => {
 
   describe('Answer Processing', () => {
     test('should not process answer if event has no triggers', () => {
-      const config = createEventsConfig(1, [{ content: 'No triggers' }])
+      const config = createEventsConfig(1, [createTextEvent({ content: 'No triggers' })])
       scheduler.loadEvents(config)
 
       // Should not throw
@@ -250,20 +252,20 @@ describe('EventScheduler', () => {
     })
 
     test('should substitute variables in triggered event content', () => {
-      const triggeredEvent = createEventFixture({
+      const triggeredEvent = createTextEvent({
         id: 'triggered',
-        content: 'You said: {answer}!',
-        type: 'text'
+        content: 'You said: {answer}!'
       })
 
-      const config = createEventsConfig(1, [{
-        id: 'question',
-        content: 'What is your name?',
-        type: 'question',
-        triggers: {
-          onAnswer: [triggeredEvent]
-        }
-      }])
+      const config = createEventsConfig(1, [
+        createQuestionEvent({
+          id: 'question',
+          content: 'What is your name?',
+          triggers: {
+            onAnswer: [triggeredEvent]
+          }
+        })
+      ])
 
       scheduler.loadEvents(config)
       scheduler.startGame()
@@ -276,27 +278,28 @@ describe('EventScheduler', () => {
     })
 
     test('should handle object-based triggers with matching key', () => {
-      const yesEvent = createEventFixture({
+      const yesEvent = createTextEvent({
         id: 'yes_response',
         content: 'Great!'
       })
 
-      const noEvent = createEventFixture({
+      const noEvent = createTextEvent({
         id: 'no_response',
         content: 'Too bad!'
       })
 
-      const config = createEventsConfig(1, [{
-        id: 'question',
-        content: 'Do you like it?',
-        type: 'question',
-        triggers: {
-          onAnswer: {
-            'yes': [yesEvent],
-            'no': [noEvent]
+      const config = createEventsConfig(1, [
+        createQuestionEvent({
+          id: 'question',
+          content: 'Do you like it?',
+          triggers: {
+            onAnswer: {
+              'yes': [yesEvent],
+              'no': [noEvent]
+            }
           }
-        }
-      }])
+        })
+      ])
 
       scheduler.loadEvents(config)
       scheduler.startGame()
@@ -306,21 +309,22 @@ describe('EventScheduler', () => {
     })
 
     test('should handle object-based triggers with no matching key', () => {
-      const yesEvent = createEventFixture({
+      const yesEvent = createTextEvent({
         id: 'yes_response',
         content: 'Great!'
       })
 
-      const config = createEventsConfig(1, [{
-        id: 'question',
-        content: 'Do you like it?',
-        type: 'question',
-        triggers: {
-          onAnswer: {
-            'yes': [yesEvent]
+      const config = createEventsConfig(1, [
+        createQuestionEvent({
+          id: 'question',
+          content: 'Do you like it?',
+          triggers: {
+            onAnswer: {
+              'yes': [yesEvent]
+            }
           }
-        }
-      }])
+        })
+      ])
 
       scheduler.loadEvents(config)
       scheduler.startGame()
@@ -335,19 +339,20 @@ describe('EventScheduler', () => {
 
       const schedulerWithMock = new EventScheduler(mockAnswerGetter)
 
-      const triggeredEvent = createEventFixture({
+      const triggeredEvent = createTextEvent({
         id: 'triggered',
         content: 'This should not trigger'
       })
 
-      const config = createEventsConfig(1, [{
-        id: 'question',
-        content: 'Question',
-        type: 'question',
-        triggers: {
-          onAnswer: [triggeredEvent]
-        }
-      }])
+      const config = createEventsConfig(1, [
+        createQuestionEvent({
+          id: 'question',
+          content: 'Question',
+          triggers: {
+            onAnswer: [triggeredEvent]
+          }
+        })
+      ])
 
       schedulerWithMock.loadEvents(config)
       schedulerWithMock.startGame()
@@ -363,7 +368,7 @@ describe('EventScheduler', () => {
 
   describe('Variable Substitution', () => {
     test('should substitute single variable', () => {
-      const config = createEventsConfig(1, [{ content: 'Hello {answer}' }])
+      const config = createEventsConfig(1, [createTextEvent({ content: 'Hello {answer}' })])
       scheduler.loadEvents(config)
 
       // We'll test this indirectly through processAnswer

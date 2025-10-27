@@ -182,16 +182,17 @@ export function createEventFixture(overrides?: Partial<TextEventConfig>): EventC
 
 /**
  * Factory for creating event configuration with multiple events
+ * Accepts either pre-built EventConfig objects or creates text events
  */
-export function createEventsConfig(count: number, overrides: Partial<EventConfig>[] = []): { events: EventConfig[] } {
-  const events: EventConfig[] = []
+export function createEventsConfig(count: number, events: EventConfig[] = []): { events: EventConfig[] } {
+  const result: EventConfig[] = [...events]
 
-  for (let i = 0; i < count; i++) {
-    const override = overrides[i] || {}
-    events.push(createEventFixture(override))
+  // Fill remaining count with text events
+  for (let i = events.length; i < count; i++) {
+    result.push(createTextEvent())
   }
 
-  return { events }
+  return { events: result }
 }
 
 /**

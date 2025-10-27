@@ -5,7 +5,7 @@ import { GameDatabase } from '../../database/db.js'
 import { EventScheduler } from '../../eventScheduler.js'
 import { createApiRoutes } from '../../routes/api.js'
 import { createTestDb, cleanupTestDb } from '../utils/testDb.js'
-import { resetCounters, createEventsConfig, createEventFixture } from '../fixtures/factories.js'
+import { resetCounters, createEventsConfig, createEventFixture, createTextEvent, createQuestionEvent } from '../fixtures/factories.js'
 
 /**
  * Helper function to create test Express app with error handler
@@ -78,9 +78,9 @@ describe('API Routes', () => {
 
     test('should return event at user cursor position', async () => {
       const config = createEventsConfig(3, [
-        { content: 'Event 0' },
-        { content: 'Event 1' },
-        { content: 'Event 2' }
+        createTextEvent({ content: 'Event 0' }),
+        createTextEvent({ content: 'Event 1' }),
+        createTextEvent({ content: 'Event 2' })
       ])
       scheduler.loadEvents(config)
 
@@ -148,9 +148,9 @@ describe('API Routes', () => {
 
     test('should return mandatory event before cursor if unanswered', async () => {
       const config = createEventsConfig(3, [
-        { content: 'Event 0', mandatory: false },
-        { content: 'Mandatory Event 1', mandatory: true },
-        { content: 'Event 2', mandatory: false }
+        createTextEvent({ content: 'Event 0', mandatory: false }),
+        createTextEvent({ content: 'Mandatory Event 1', mandatory: true }),
+        createTextEvent({ content: 'Event 2', mandatory: false })
       ])
       scheduler.loadEvents(config)
 
@@ -289,9 +289,9 @@ describe('API Routes', () => {
 
     test('should not advance cursor when answering mandatory event before cursor', async () => {
       const config = createEventsConfig(3, [
-        { mandatory: true },
-        { mandatory: false },
-        { mandatory: false }
+        createTextEvent({ mandatory: true }),
+        createTextEvent({ mandatory: false }),
+        createTextEvent({ mandatory: false })
       ])
       scheduler.loadEvents(config)
 
@@ -317,20 +317,20 @@ describe('API Routes', () => {
     })
 
     test('should process conditional events based on answer', async () => {
-      const triggeredEvent = createEventFixture({
+      const triggeredEvent = createTextEvent({
         id: 'triggered',
-        content: 'You said yes!',
-        type: 'text'
+        content: 'You said yes!'
       })
 
-      const config = createEventsConfig(1, [{
-        id: 'question',
-        type: 'question',
-        content: 'Do you like Halloween?',
-        triggers: {
-          onAnswer: [triggeredEvent]
-        }
-      }])
+      const config = createEventsConfig(1, [
+        createQuestionEvent({
+          id: 'question',
+          content: 'Do you like Halloween?',
+          triggers: {
+            onAnswer: [triggeredEvent]
+          }
+        })
+      ])
 
       scheduler.loadEvents(config)
       scheduler.startGame()
