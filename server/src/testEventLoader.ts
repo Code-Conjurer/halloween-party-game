@@ -10,7 +10,7 @@ export interface TestEventConfig {
     id: string
     type: string
     startTime: string  // Relative: "now", "+5s", "+2m"
-    endTime: string    // Relative: "now", "+5s", "+2m"
+    endTime?: string   // Optional - Relative: "now", "+5s", "+2m". If omitted, event has no auto-hide duration
     content: string
     placeholder?: string
     options?: Array<{ id: string; text: string; value: string }>
@@ -81,20 +81,25 @@ export function processTestConfig(
 ): ProcessedEventConfig {
   const processedEvents: EventConfig[] = config.events.map(event => {
     const startOffset = parseRelativeTime(event.startTime)
-    const endOffset = parseRelativeTime(event.endTime)
-
     const startTime = serverStartTime + startOffset
-    const endTime = serverStartTime + endOffset
 
-    // Validate timing
-    if (endTime <= startTime) {
-      throw new Error(
-        `Event "${event.id}": endTime (${event.endTime}) must be after startTime (${event.startTime})`
-      )
+    // Calculate duration only if endTime is provided
+    let duration: number | undefined
+
+    if (event.endTime) {
+      const endOffset = parseRelativeTime(event.endTime)
+      const endTime = serverStartTime + endOffset
+
+      // Validate timing
+      if (endTime <= startTime) {
+        throw new Error(
+          `Event "${event.id}": endTime (${event.endTime}) must be after startTime (${event.startTime})`
+        )
+      }
+
+      // Calculate duration from the difference
+      duration = endTime - startTime
     }
-
-    // Calculate duration from the difference
-    const duration = endTime - startTime
 
     // Convert to EventConfig format with triggerAt
     return {
@@ -154,9 +159,7 @@ export function loadTestEventFile(filePath: string): ProcessedEventConfig {
       if (!event.startTime) {
         throw new Error(`Event "${event.id}" is missing required field: startTime`)
       }
-      if (!event.endTime) {
-        throw new Error(`Event "${event.id}" is missing required field: endTime`)
-      }
+      // endTime is optional - if omitted, event will have no auto-hide duration
     })
 
     // Process the config with current time as server start

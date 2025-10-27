@@ -42,6 +42,7 @@ Test event files use the same structure as production events, but with **relativ
 1. **Relative seconds** (for events happening soon): `"+5s"`, `"+30s"`, `"+60s"`
 2. **Relative minutes** (for longer sequences): `"+1m"`, `"+5m"`, `"+10m"`
 3. **Immediate**: `"now"` or `"+0s"`
+4. **No auto-hide**: Omit `endTime` entirely to keep event visible indefinitely
 
 #### Example: `test-events/quick-test.json`
 
@@ -308,12 +309,29 @@ Restart the server to load the new configuration.
 }
 ```
 
+### Persistent Event (no auto-hide)
+```json
+{
+  "events": [
+    {
+      "id": "persistent-question",
+      "type": "question",
+      "startTime": "now",
+      "content": "This question stays visible until answered",
+      "placeholder": "Your answer"
+    }
+  ]
+}
+```
+Note: When `endTime` is omitted, the event has no duration and stays visible indefinitely.
+
 ## Implementation Tasks
 
-- [ ] Implement `testEventLoader.ts` with relative time parsing
-- [ ] Integrate with event engine initialization to check `TEST_EVENT_FILE` env var
-- [ ] Create example test configurations
-- [ ] Add `.gitignore` entry for `test-events/` directory
+- [x] Implement `testEventLoader.ts` with relative time parsing
+- [x] Integrate with event engine initialization to check `TEST_EVENT_FILE` env var
+- [x] Create example test configurations
+- [x] Add `.gitignore` entry for `test-events/` directory
+- [x] Make `endTime` optional to support persistent events
 
 ## Manual Testing Checklist
 

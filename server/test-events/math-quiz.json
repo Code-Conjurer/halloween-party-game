@@ -1,0 +1,24 @@
+{
+  "events": [
+    {
+      "id": "math-question",
+      "type": "question",
+      "startTime": "now",
+      "content": "What is 2 + 3?",
+      "placeholder": "Enter your answer",
+      "triggers": {
+        "onAnswer": {
+          "5": [
+            {
+              "id": "correct-response",
+              "type": "text",
+              "startTime": "now",
+              "endTime": "+10s",
+              "content": "Good job! You got it right!"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
